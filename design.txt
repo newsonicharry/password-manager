@@ -15,7 +15,57 @@ Dependencies:
 Encryption Architecture:
 (WIP)
 
-Interface:
-(WIP)
+TUI Interface:
+-First time screen (if no files exist)
+	-Displays the username and password
+	-Has checkbox and path to use bitwarden import
+	-Has argon2 parameters, (memory, iterations)
+	-Create vault button
 
- 
+-Login screen
+	-Username field
+	-Password field
+	-Enter and Quit button
+	-Also has a status info at the bottom
+
+-Main Vault
+	- Left side has entires list
+	- Right side has site information, username info, notes, some meta info such as date modified and a hidden password
+	- There are then four options on the right bottom
+		- [r] reveal password
+		- [c] copy password
+		- [e] edit entry
+		- [d] delete entry
+	- New entries includes those fields, plus a password generator
+	- at the bottom there are several other options
+		- [/] search
+		- [n] new
+		- [q] logout  
+	- This main vault will automatically logout after 15 minutes
+
+
+Internal Design (WIP, may change):
+	Class Vault{};
+	-Holds Password entries and handles adding / editing entries
+
+	Struct PasswordEntry{};
+	Sturct EntryMetadata{};
+
+	Class VaultService{};
+	-Handles the creation and opening of a vault
+
+	Class SessionManager{};
+	-Handles inactivity
+
+	Class CryptoEngine{};
+	-Encrypts, decryptes and handles the MAC
+
+	Class BitwardedImporter{};
+	-Open the Bitwarden json
+	
+	Class SecureString{};
+	-All passwords and other important data is held in here and gets zeroed-out
+
+	Class VaultView{};
+	-What FTXUI actually interacts with
+	

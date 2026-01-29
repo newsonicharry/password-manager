@@ -2,3 +2,4 @@ build/
 FTXUI/
 .clang-tidy
 .cache
+dependencies/
