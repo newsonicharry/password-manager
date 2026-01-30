@@ -6,7 +6,7 @@
 
 class CryptoEngine{
 public:
-  CryptoEngine() = default;
+  CryptoEngine(std::string_view path);
 
 private:
   const std::string path_;
