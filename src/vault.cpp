@@ -3,11 +3,16 @@
 
 
 // Vault::Vault(std::string_view username){
+  
 // }
 
 
+auto Vault::does_directory_exist() -> bool{
+  return true;
+}
+
 // Todo: implmenent windows support
-void Vault::generateDirectory(){
+void Vault::generate_directory(){
   namespace fs = std::filesystem;
 
 #ifdef __linux__
@@ -16,11 +21,7 @@ void Vault::generateDirectory(){
     fs::create_directory(directory_path);
   } 
 
-
 #elif _WIN32
 
 #endif
 }
-
-
-

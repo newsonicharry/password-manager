@@ -2,11 +2,12 @@ TUI Password Manager Design Doc
 By Harry Phillips
 
 General Description:
-A terminal based password manager, accessible through a terminal user interface (TUI). This is a local only password manager, with support for multiple users with each user having their own unique file.
-Each file will include information about the site, usernames, passwords, supplementary notes and metadata about that entry. Encryption should be industry standard, including argon2 for password hashing,
-and keep a unique MAC information for file tampering. Additional there should be support for auto generation of new passwords and the ability to parse existing passwords from Bitwarden into this program.
-This will all be handled in the backend, with the front-end displaying both a login screen, setup-screen for porting existing passwords from Bitwarden and a split-screen password viewer, with auto logout
-functionality.
+A terminal based password manager, accessible through a terminal user interface (TUI). This is a local only password manager, with support for multiple
+users with each user having their own unique file. Each file will include information about the site, usernames, passwords, supplementary notes and metadata
+about that entry. Encryption should be industry standard, including argon2 for password hashing, and keep a unique MAC information for file tampering.
+Additional there should be support for auto generation of new passwords and the ability to parse existing passwords from Bitwarden into this program.
+This will all be handled in the backend, with the front-end displaying both a login screen, setup-screen for porting existing passwords from Bitwarden
+and a split-screen password viewer, with auto logout functionality.
 
 Dependencies:
 -libsodium

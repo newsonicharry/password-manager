@@ -8,10 +8,10 @@ public:
   // Vault
   Vault(std::string_view username);
 private:
-  void generateDirectory();
-  
-  
-  CryptoEngine vault_data;
+  static void generate_directory();
+  static auto does_directory_exist() -> bool;
+
+  CryptoEngine vault_data_;
 };
 
 

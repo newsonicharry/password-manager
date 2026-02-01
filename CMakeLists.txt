@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(password_manager LANGUAGES CXX)
 
-add_subdirectory(dependencies/FTXUI)
+# add_subdirectory(dependencies/FTXUI)
 
 #make sure be got pkgconfig
 find_package(PkgConfig REQUIRED)
@@ -23,8 +23,8 @@ target_include_directories(password_manager
 
 target_link_libraries(password_manager
     PRIVATE
-        ftxui::screen
-        ftxui::dom
-        ftxui::component
+        # ftxui::screen
+        # ftxui::dom
+        # ftxui::component
         ${SODIUM_LIBRARIES}
 )
