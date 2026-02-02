@@ -70,3 +70,6 @@ Internal Design (WIP, may change):
 	Class VaultView{};
 	-What FTXUI actually interacts with
 	
+File design:
+	-Header name: 8 bytes, have not decided what it'll be yet
+	-Nonce: 16 bytes
