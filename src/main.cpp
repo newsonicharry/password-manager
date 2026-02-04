@@ -1,5 +1,6 @@
 #include <cstring>
 #include <fstream>
+#include <sodium/crypto_pwhash_argon2id.h>
 
 #define MESSAGE (const unsigned char *) "test\0"
 #define MESSAGE_LEN 5
@@ -12,6 +13,8 @@
 #include "sodium.h"
 
 auto main() -> int{
+  // crypto_pwhash();
+
   unsigned char nonce[crypto_aead_aegis256_NPUBBYTES];
   unsigned char key[crypto_aead_aegis256_KEYBYTES];
   unsigned char ciphertext[MESSAGE_LEN + crypto_aead_aegis256_ABYTES];

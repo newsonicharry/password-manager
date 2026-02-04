@@ -71,5 +71,21 @@ Internal Design (WIP, may change):
 	-What FTXUI actually interacts with
 	
 File design:
-	-Header name: 8 bytes, have not decided what it'll be yet
-	-Nonce: 16 bytes
+	Headers:
+		-Header name: 8 bytes, have not decided what it'll be yet
+		-Nonce: 16 bytes
+		-Salt: 16 bytes
+		-Iterations: 1 byte
+		
+		
+
+
+	Storage:
+		Each entry will contain in order:
+		(432 bytes per entry)
+		- 32 bytes for the site
+		- 64 bytes for the username
+		- 64 bytes for the password
+		- 256 bytes for the notes
+		- 8 bytes for the date created timestamp
+		- 8 bytes for the date modified timestamp
