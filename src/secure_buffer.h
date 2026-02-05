@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cassert>
+#include <cstddef>
+
 class SecureBuffer{
 public:
   SecureBuffer(unsigned long long length);
@@ -19,12 +21,15 @@ public:
   auto get_length() const -> unsigned long long { return length_; }
 
   [[nodiscard]]
-  auto get_empty_buffer_ptr() -> unsigned char*;
+  auto get_write_ptr() -> std::byte*;
+
+  [[nodiscard]]
+  auto get_read_ptr() -> const std::byte* { return buffer_; }
   
-  auto operator[](int index) -> const unsigned char&;
+  auto operator[](std::size_t index) -> const std::byte&;
     
 private:
-  unsigned char* buffer_;
+  std::byte* buffer_;
   unsigned long long length_;
   bool has_data_;
 };

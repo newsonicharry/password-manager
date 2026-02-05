@@ -1,0 +1,24 @@
+#pragma once
+
+#include "secure_buffer.h"
+#include "file_manager.h"
+#include "password_entry.h" 
+#include <string_view>
+#include <ctime>
+#include "vector"
+
+class VaultService{
+public:
+  VaultService();
+
+  auto try_open_file(std::string_view username) -> bool;
+   
+  
+private:
+  
+
+  SecureBuffer secure_buffer_;
+  FileManager file_manager_;
+  std::vector<PasswordEntry> password_entries_;
+};
+

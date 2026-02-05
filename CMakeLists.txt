@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+
 project(password_manager LANGUAGES CXX)
 
 # add_subdirectory(dependencies/FTXUI)
@@ -13,7 +18,7 @@ add_executable(password_manager
     src/main.cpp
 )
 
-target_compile_features(password_manager PRIVATE cxx_std_17)
+target_compile_features(password_manager PRIVATE cxx_std_20)
 
 # use those prefixed SODIUM Varibale
 target_include_directories(password_manager
