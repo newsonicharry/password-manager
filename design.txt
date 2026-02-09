@@ -72,20 +72,26 @@ Internal Design (WIP, may change):
 	
 File design:
 	Headers:
-		-Header name: 8 bytes, have not decided what it'll be yet
-		-Nonce: 16 bytes
-		-Salt: 16 bytes
+		-Header name: 8 bytes,
+			Hex: 00 45 6E 63 72 79 70 74
+			Ascii: \0Encrypt 
+		-Nonce: 32 bytes
+		-Salt: 32 bytes
 		-Iterations: 1 byte
-		
-		
-
+		-Entry count: 2 bytes	
+		-Rest of the file: ... bytes
 
 	Storage:
-		Each entry will contain in order:
-		(432 bytes per entry)
-		- 32 bytes for the site
-		- 64 bytes for the username
-		- 64 bytes for the password
-		- 256 bytes for the notes
-		- 8 bytes for the date created timestamp
-		- 8 bytes for the date modified timestamp
+		Each entry will contain one of each with the following magic identifier:
+		- the site, (1)
+		- the username, (2)
+		- the password, (3)
+		- the notes, (4)
+		- the date created timestamp, (5)
+		- the date modified timestamp, (6)
+
+		For each entry it will start with a magic identifier (1 byte) of 0, followed by the first real magic identifier
+		then a length (3 bytes) Then it will continue reading until it hits another magic identifier
+
+		Any unidentified magic identifier will have it and any data stored be ignored
+

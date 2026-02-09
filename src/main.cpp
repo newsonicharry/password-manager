@@ -1,55 +1,78 @@
+#include <algorithm>
+#include <bit>
+#include <cstdint>
 #include <cstring>
-#include <fstream>
 #include <sodium/crypto_pwhash_argon2id.h>
-
-#define MESSAGE (const unsigned char *) "test\0"
-#define MESSAGE_LEN 5
-#define ADDITIONAL_DATA (const unsigned char *) "123456"
-#define ADDITIONAL_DATA_LEN 6
-
-
-#include <iostream>
 #include <sodium/crypto_aead_aegis256.h>
-#include "sodium.h"
+#include <array>
+#include <string_view>
+#include <fstream>
+#include <iostream>
 
+template<typename T>
+void write_binary(std::ofstream& file, const T& value)
+{
+  file.write(std::bit_cast<const char*>(&value), sizeof(value)); 
+}
 
 auto main() -> int{
   // crypto_pwhash();
 
-  unsigned char nonce[crypto_aead_aegis256_NPUBBYTES];
-  unsigned char key[crypto_aead_aegis256_KEYBYTES];
-  unsigned char ciphertext[MESSAGE_LEN + crypto_aead_aegis256_ABYTES];
-  unsigned long long ciphertext_len;
+  constexpr std::string_view MESSAGE{"this is a super cool message that will never be leaked for sure!!!"};
+  constexpr std::string_view ADDITIONAL_DATA{"publicdatahere"};
+  std::array<unsigned char, crypto_aead_aegis256_NPUBBYTES> nonce{};
+  std::array<unsigned char, crypto_aead_aegis256_KEYBYTES> key{}; 
+  std::array<unsigned char, crypto_aead_aegis256_ABYTES+MESSAGE.length()> ciphertext{};
 
-  // crypto_aead_aegis256_keygen(key);
-  // randombytes_buf(nonce, sizeof nonce);
+  std::cout << crypto_aead_aegis256_KEYBYTES << '\n'; 
+  // randombytes_buf(key.data(), key.size());
+  // randombytes_buf(nonce.data(), nonce.size());
+  
+  // used for the sake of testing and consistency, very bad for security
+  std::fill(nonce.begin(), nonce.end(), 0);
+  std::fill(key.begin(), key.end(), 0);
 
-  std::memset(key, 'A', crypto_aead_aegis256_KEYBYTES);
-  std::memset(nonce, 'A', crypto_aead_aegis256_NPUBBYTES);
-  crypto_aead_aegis256_encrypt(ciphertext, &ciphertext_len,
-                             MESSAGE, MESSAGE_LEN,
-                             ADDITIONAL_DATA, ADDITIONAL_DATA_LEN,
-                             NULL, nonce, key);
+  
+  unsigned long long cipher_text_len{ciphertext.size()};
+  crypto_aead_aegis256_encrypt(ciphertext.data(), &cipher_text_len,
+                             std::bit_cast<unsigned char*>(MESSAGE.data()), MESSAGE.length(),
+                             std::bit_cast<unsigned char*>(ADDITIONAL_DATA.data()), ADDITIONAL_DATA.length(),
+                             nullptr, nonce.data(), key.data());
 
-  std::ofstream file{"output.txt"};
-  file << ciphertext;
+
+  // write to file
+
+  std::ofstream file{"output.encrypted", std::ios::binary};
+
+  file.put('\0'); // null nerminator for the magic header
+  write_binary(file, "Encrypt"); // rest of magic header
+  write_binary(file, nonce); // nonce
+  write_binary(file, nonce); // salt
+
+  write_binary(file, static_cast<uint8_t>(0)); // iterations
+  write_binary(file, static_cast<uint16_t>(0)); // entry count
   
-  // std::cout << ciphertext[0] << "it is end now";
+  // decrypt
+
+
+  std::array<unsigned char, MESSAGE.length()+1> decrypted{};
+  decrypted[MESSAGE.length()] = 0; // null terminator at the end, should only be used for strings that are printed
+  unsigned long long decrypted_len = MESSAGE.length();
   
-  unsigned char decrypted[MESSAGE_LEN+1];
-  decrypted[MESSAGE_LEN] = 0;
-  std::memset(decrypted, 65, MESSAGE_LEN);
-  std::cout << decrypted << '\n';
-  unsigned long long decrypted_len;
-  crypto_aead_aegis256_decrypt(decrypted, &decrypted_len,
-                                 NULL,
-                                 ciphertext, ciphertext_len,
-                                 ADDITIONAL_DATA,
-                                 ADDITIONAL_DATA_LEN,
-                                 nonce, key);
-  
-  std::cout << decrypted;
- return 0;
+  if (0 == crypto_aead_aegis256_decrypt(decrypted.data(), &decrypted_len,
+                                 nullptr,
+                                 ciphertext.data(), ciphertext.size(),
+                                 std::bit_cast<unsigned char*>(ADDITIONAL_DATA.data()), ADDITIONAL_DATA.length(),
+                                 nonce.data(), key.data()))
+  {
+    std::cout << decrypted.data() << '\n';
+  }
+  else
+  {
+    std::cout << "failed to decrypt\n";
+  }
+
+  return 0;
 }
 
 

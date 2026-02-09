@@ -7,18 +7,23 @@
 #include <ctime>
 #include "vector"
 
+
 class VaultService{
 public:
-  VaultService();
+  VaultService() = default;
 
-  auto try_open_file(std::string_view username) -> bool;
-   
+  [[nodiscard]]
+  void create_dir_if_not_exists();
+
+
+  [[nodiscard]]
+  auto try_get_user_data(std::string_view username) -> bool;
+  
   
 private:
   
-
-  SecureBuffer secure_buffer_;
-  FileManager file_manager_;
-  std::vector<PasswordEntry> password_entries_;
+  SecureBuffer secure_buffer_{};
+  FileManager file_manager_{};
+  std::vector<PasswordEntry> password_entries_{};
 };
 
