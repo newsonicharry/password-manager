@@ -2,39 +2,45 @@
 
 #include "secure_buffer.h"
 #include "constants.h"
-
 #include <array>
 #include <cstdint>
 #include <sodium.h>
+#include <sodium/crypto_aead_aegis256.h>
+#include <sodium/crypto_pwhash.h>
 #include <string_view>
 #include <span>
+#include <filesystem>
 
-// class CryptoEngine{
-// public:
-//   CryptoEngine(std::string_view file_path) : file_path_{file_path} {}
+namespace fs = std::filesystem;
 
-//   void decrypt_to_buffer(SecureBuffer& secure_buffer, SecureBuffer& key);  
-  
-// private:
-
-
-//   std::string file_path_;
-// };
-
-
-namespace CryptoEngine
+namespace crypto_engine
 {
 
   struct EncryptionDataRefView
   {
-    // S;
+    fs::path file_path;
+    std::string_view message;
+    std::string_view additional_data;
+    std::span<std::array<unsigned char, crypto_aead_aegis256_NPUBBYTES>> nonce;
+    std::span<SecureBuffer> key;
   };
-  
-  auto generate_salt() -> std::array<uint8_t, constants::NUM_SALT_BYTES>;
-  
-  auto get_hashed_key(SecureBuffer& key, std::array<uint8_t, constants::NUM_SALT_BYTES>& salt) -> SecureBuffer;
 
-  auto decrypt_file(SecureBuffer& key, std::string_view file_pat) -> SecureBuffer;
+  
+  
+  template <std::size_t N>
+  auto generate_random_buffer() -> std::array<uint8_t, N>
+  {  
+    std::array<uint8_t, N> buffer{};
+
+    randombytes_buf(buffer.data(), buffer.size());
+
+    return buffer;
+  }
+
+  
+  auto hash_key(SecureBuffer& key, std::array<uint8_t, crypto_pwhash_SALTBYTES>& salt) -> SecureBuffer;
+
+  auto decrypt_file(const EncryptionDataRefView& encryption_data) -> SecureBuffer;
 
   void encrypt_file();
 }

@@ -16,6 +16,14 @@ pkg_check_modules(SODIUM REQUIRED libsodium)
 
 add_executable(password_manager
     src/main.cpp
+
+    src/secure_buffer.h
+    src/secure_buffer.cpp
+
+    src/crypto_engine.h
+    src/crypto_engine.cpp
+    
+    src/constants.h
 )
 
 target_compile_features(password_manager PRIVATE cxx_std_20)

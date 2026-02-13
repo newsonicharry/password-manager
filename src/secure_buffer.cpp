@@ -32,7 +32,8 @@ auto SecureBuffer::operator[](std::size_t index) -> const std::byte&
 
 auto SecureBuffer::get_write_ptr() -> std::byte*
 {
-  if (buffer_.capacity() == 0){
+  // can only write to it if a length has been initalized and theres no data in it already
+  if (buffer_.capacity() == 0 && buffer_.size() != 0){
     return nullptr;
   }
 
