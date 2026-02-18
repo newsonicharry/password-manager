@@ -24,8 +24,6 @@ namespace crypto_engine
     std::span<std::array<unsigned char, crypto_aead_aegis256_NPUBBYTES>> nonce;
     std::span<SecureBuffer> key;
   };
-
-  
   
   template <std::size_t N>
   auto generate_random_buffer() -> std::array<uint8_t, N>
@@ -40,9 +38,9 @@ namespace crypto_engine
   
   auto hash_key(SecureBuffer& password, std::array<uint8_t, protocol::NUM_SALT_BYTES>& salt) -> SecureBuffer;
 
-  auto decrypt_file(const EncryptionDataRefView& encryption_data) -> SecureBuffer;
+  auto decrypt_file(fs::path file_path, const SecureBuffer& key) -> SecureBuffer;
 
-  void encrypt_file();
+  void encrypt_file(const EncryptionDataRefView& encryption_data);
 }
 
 // decypt to secure buffer

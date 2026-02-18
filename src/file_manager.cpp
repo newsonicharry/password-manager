@@ -3,26 +3,25 @@
 #include <filesystem>
 #include <string_view>
 #include <sodium.h>
+#include <iostream>
 
-namespace {
-  constexpr std::string_view passwords_list_dir{"passwords_list"};
-  constexpr std::string_view file_extension{".encrypted"};
-}
 
 auto FileManager::get_directory_path() -> fs::path{
 #ifdef __linux__
+
   const char* xdg_data{std::getenv("XDG_DATA_HOME")};
 
   if (xdg_data != nullptr){
     return fs::path(xdg_data) / project::APP_NAME;
   }
-
+  
   const char* home{std::getenv("HOME")};
 
-  if (home != nullptr){
-    return fs::path(xdg_data) / ".local" / "share" / project::APP_NAME;
-  }
 
+  if (home != nullptr){
+    return fs::path(home) / ".local" / "share" / project::APP_NAME;
+  }
+  
   throw "XDG_DATA_HOME and HOME enviroment variables are not set";
   
 #elif _WIN32
@@ -45,18 +44,18 @@ auto FileManager::get_directory_path() -> fs::path{
 
 
 auto FileManager::does_directory_exist() -> bool{
-  return fs::is_directory(directory_path_) && fs::is_directory(directory_path_ / passwords_list_dir);
+  return fs::is_directory(directory_path_) && fs::is_directory(directory_path_);
 }
 
 void FileManager::create_directory(){
   fs::create_directory(directory_path_);
 
-  const fs::path passwords_directory{directory_path_ / passwords_list_dir};
+  const fs::path passwords_directory{directory_path_ / project::PASSOWRD_LIST_DIR};
   fs::create_directory(passwords_directory);
 }
 
 auto FileManager::does_user_exist(std::string_view username) -> bool{
-  return fs::exists(directory_path_ / passwords_list_dir / username);
+  return fs::exists(directory_path_ / project::PASSOWRD_LIST_DIR / username);
 }  
 
 
@@ -68,8 +67,8 @@ void FileManager::decrypt_to_secure_buffer(SecureBuffer& secure_buffer, std::str
     throw "Expected user file does not exist";
   }
 
-  fs::path file_path{ directory_path_ / passwords_list_dir / username };
-  file_path.replace_extension(file_extension);
+  fs::path file_path{ directory_path_ / project::PASSOWRD_LIST_DIR / username };
+  file_path.replace_extension(project::FILE_EXTENSION);
   
   
     

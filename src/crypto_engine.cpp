@@ -14,8 +14,6 @@ auto crypto_engine::hash_key(SecureBuffer& password, std::array<uint8_t, protoco
 {
   SecureBuffer hashed_key{protocol::NUM_KEY_HASH_BYTES};
 
-  std::cout << std::bit_cast<char*>(password.get_read_ptr());
-  std::cout << password.get_length();
   if (0 != crypto_pwhash(std::bit_cast<unsigned char*>(hashed_key.get_write_ptr()), hashed_key.get_length(),
                 std::bit_cast<const char*>(password.get_read_ptr()), password.get_length(),
                 salt.data(),
@@ -30,22 +28,22 @@ auto crypto_engine::hash_key(SecureBuffer& password, std::array<uint8_t, protoco
 
 
 
-auto crypto_engine::decrypt_file(const EncryptionDataRefView& encryption_data) -> SecureBuffer
+auto crypto_engine::decrypt_file(fs::path file_path, const SecureBuffer& password) -> SecureBuffer
 {
 
-  if (!fs::exists(encryption_data.file_path))
+  if (!fs::exists(file_path))
   {
     throw "File path for file to decypt does not exist.\n";
   }
   
-  std::ifstream file{encryption_data.file_path, std::ios::in | std::ios::binary};
+  std::ifstream file{file_path, std::ios::in | std::ios::binary};
 
   if (!file)
   {
     throw "Failed to open and decrypt file.\n";
   }
 
-  const std::size_t size {fs::file_size(encryption_data.file_path)};
+  const std::uintmax_t  size {fs::file_size(file_path)};
 
   if (size < protocol::TOTAL_HEADER_BYTES)
   {
@@ -53,10 +51,12 @@ auto crypto_engine::decrypt_file(const EncryptionDataRefView& encryption_data) -
   }
 
 
-  std::string header_name(protocol::NUM_HEADER_NAME_BYTES, '\0');
+  std::string header_name(protocol::NUM_HEADER_NAME_BYTES, '1');
   file.seekg(0, std::ios::beg);
   file.read(header_name.data(), protocol::NUM_HEADER_NAME_BYTES);
+  // std::cout << header_name << '\n' << protocol::HEADER_NAME_VALUE << '\n';
 
+   // std::cout << header_name.compare(protocol::HEADER_NAME_VALUE);
   if (header_name != protocol::HEADER_NAME_VALUE)
   {
     throw "Magic header does not match expected header.\n";
@@ -73,9 +73,11 @@ auto crypto_engine::decrypt_file(const EncryptionDataRefView& encryption_data) -
 
   file >> iterations;
   file >> entry_count;  
-  
+
   SecureBuffer decrypted_file{};
 
+  std::cout << "iterations: " << static_cast<uint8_t>(iterations) << '\n'; 
+  std::cout << "entry count: " << entry_count << '\n'; 
 
   file.close();  
   return decrypted_file;

@@ -4,11 +4,12 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
+#include <filesystem>
 #include <sodium.h>
 #include <sodium/crypto_pwhash_argon2id.h>
 #include <sodium/crypto_aead_aegis256.h>
 #include <array>
-#include <span>
 #include <string_view>
 #include <fstream>
 #include <iostream>
@@ -16,6 +17,11 @@
 #include "constants.h"
 #include "crypto_engine.h"
 #include "secure_buffer.h"
+#include "file_manager.h"
+
+
+constexpr std::string_view PASSWORD{"PigeonsAreReallyCool12345!"};
+
 
 template<typename T>
 void write_binary(std::ofstream& file, const T& value)
@@ -23,26 +29,21 @@ void write_binary(std::ofstream& file, const T& value)
   file.write(std::bit_cast<const char*>(&value), sizeof(value)); 
 }
 
-using Nonce = std::array<uint8_t, constants::NUM_NONCE_BYTES>;
-using Salt = std::array<uint8_t, constants::NUM_SALT_BYTES>;
+using Nonce = std::array<uint8_t, protocol::NUM_NONCE_BYTES>;
+using Salt = std::array<uint8_t, protocol::NUM_SALT_BYTES>;
 
-auto main() -> int{
-  // crypto_pwhash();
 
-  // std::cout << 
-
-  constexpr std::string_view PASSWORD{"PigeonsAreReallyCool12345!"};
+void create_test_file(fs::path path)
+{
 
   SecureBuffer password_holder{PASSWORD.length()};
   std::copy(PASSWORD.begin(), PASSWORD.end(), std::bit_cast<char*>(password_holder.get_write_ptr()));
 
   
-  Salt salt{ crypto_engine::generate_random_buffer<constants::NUM_SALT_BYTES>() };
-  Nonce nonce{ crypto_engine::generate_random_buffer<constants::NUM_NONCE_BYTES>() };
+  Salt salt{ crypto_engine::generate_random_buffer<protocol::NUM_SALT_BYTES>() };
+  Nonce nonce{ crypto_engine::generate_random_buffer<protocol::NUM_NONCE_BYTES>() };
 
   
-  std::cout << sizeof(salt) << '\n'; 
-  std::cout << sizeof(nonce) << '\n';
 
   SecureBuffer key{};
   try{
@@ -53,16 +54,13 @@ auto main() -> int{
     std::cout << e;
     std::exit(0);
   }
-  std::cout << "testing " << key.get_length() << '\n';
   
-  std::cout << magic_identifiers::Site;
 
-  std::cout << "finished 1\n";
 
   constexpr std::array<std::byte, 16> MESSAGE
   {
-    std::byte{magic_identifiers::Initial}, // start identifier
-    std::byte{magic_identifiers::Site}, // site identifier
+    std::byte{static_cast<uint8_t>(protocol::MagicIdentifer::Initial)}, // start identifier
+    std::byte{static_cast<uint8_t>(protocol::MagicIdentifer::Site)}, // site identifier
 
     std::byte{0}, // length 1
     std::byte{6}, // length 2
@@ -76,7 +74,7 @@ auto main() -> int{
     std::byte{0x62},
 
     // username identifer
-    std::byte{magic_identifiers::Username},
+    std::byte{static_cast<uint8_t>(protocol::MagicIdentifer::Username)},
 
     //length
     std::byte{0}, 
@@ -93,22 +91,18 @@ auto main() -> int{
   std::array<unsigned char, crypto_aead_aegis256_ABYTES+MESSAGE.size()> ciphertext{};
 
   
-  std::cout << "finished 2\n";
   unsigned long long cipher_text_len{ciphertext.size()};
 
-  std::cout << key.get_length() << '\n';
-  std::cout << crypto_aead_aegis256_KEYBYTES << '\n';
   crypto_aead_aegis256_encrypt(ciphertext.data(), &cipher_text_len,
                              std::bit_cast<unsigned char*>(MESSAGE.data()), MESSAGE.size(),
                              std::bit_cast<unsigned char*>(ADDITIONAL_DATA.data()), ADDITIONAL_DATA.length(),
                              nullptr, nonce.data(),
                              std::bit_cast<unsigned char*>(key.get_read_ptr()));
 
-  
-  std::cout << "finished 3\n";
+
  // write to file
 
-  std::ofstream file{"output.encrypted", std::ios::binary};
+  std::ofstream file{path, std::ios::binary};
 
   file.put('\0'); // null nerminator for the magic header
   write_binary(file, "Encrypt"); // rest of magic header
@@ -121,7 +115,43 @@ auto main() -> int{
   write_binary(file, ciphertext); // actuall encrypted data
 
 
-  // std::array<unsigned char, MESSAGE.size()+1> decrypted{};
+}
+
+auto main() -> int
+{
+  FileManager file_manager{};
+  if (!file_manager.does_directory_exist())
+  {
+    file_manager.create_directory();
+  }
+
+
+  fs::path path{file_manager.get_path() / project::PASSOWRD_LIST_DIR / "default"};
+
+  path.replace_extension(project::FILE_EXTENSION);
+
+  create_test_file(path);  
+
+
+  SecureBuffer password{PASSWORD.length()};
+
+  std::copy(PASSWORD.begin(), PASSWORD.end(), std::bit_cast<char*>(password.get_write_ptr()));
+  std::cout << "cecrytping file\n";
+
+  try{
+        crypto_engine::decrypt_file(path, password);
+  }
+  catch(const char* exception)
+  {
+    std::cout << exception;
+  } 
+
+  
+  // crypto_pwhash();
+
+  // std::cout << 
+
+    // std::array<unsigned char, MESSAGE.size()+1> decrypted{};
   // decrypted[MESSAGE.length()] = 0; // null terminator at the end, should only be used for strings that are printed
   // unsigned long long decrypted_len = MESSAGE.length();
   

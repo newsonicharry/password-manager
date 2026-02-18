@@ -95,3 +95,16 @@ File design:
 
 		Any unidentified magic identifier will have it and any data stored be ignored
 
+
+Directory design:
+	Will store data within ".local/share/password_manager/" on linux
+	And "%APPDATA%/password_manager/" on windows
+
+	The design will look like this:
+
+	password_manager/
+		password_list/
+			<username1>.encrypted
+			<username2>.encrypted
+			<etc...>
+

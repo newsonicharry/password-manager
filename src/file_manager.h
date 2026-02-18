@@ -16,13 +16,17 @@ public:
   auto does_user_exist(std::string_view username) -> bool;
 
   void decrypt_to_secure_buffer(SecureBuffer& secure_buffer, std::string_view username);
-  
-  
+
+  [[nodiscard]]
+  auto get_path() -> fs::path{ return directory_path_; };  
   
 private:
-  fs::path directory_path_{get_directory_path()};
+
 
   static auto get_directory_path() -> fs::path;
+
+  fs::path directory_path_{get_directory_path()};
+
 
   
 };

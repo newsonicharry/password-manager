@@ -22,7 +22,10 @@ add_executable(password_manager
 
     src/crypto_engine.h
     src/crypto_engine.cpp
-    
+
+    src/file_manager.h
+    src/file_manager.cpp
+        
     src/constants.h
 )
 
