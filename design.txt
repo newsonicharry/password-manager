@@ -76,7 +76,7 @@ File design:
 			Hex: 00 45 6E 63 72 79 70 74
 			Ascii: \0Encrypt 
 		-Nonce: 32 bytes
-		-Salt: 32 bytes
+		-Salt: 16 bytes
 		-Iterations: 1 byte
 		-Entry count: 2 bytes	
 		-Rest of the file: ... bytes
@@ -91,7 +91,7 @@ File design:
 		- the date modified timestamp, (6)
 
 		For each entry it will start with a magic identifier (1 byte) of 0, followed by the first real magic identifier
-		then a length (3 bytes) Then it will continue reading until it hits another magic identifier
+		then a length (2 bytes) Then it will continue reading until it hits another magic identifier
 
 		Any unidentified magic identifier will have it and any data stored be ignored
 

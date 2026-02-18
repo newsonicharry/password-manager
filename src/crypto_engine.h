@@ -38,7 +38,7 @@ namespace crypto_engine
   }
 
   
-  auto hash_key(SecureBuffer& key, std::array<uint8_t, crypto_pwhash_SALTBYTES>& salt) -> SecureBuffer;
+  auto hash_key(SecureBuffer& password, std::array<uint8_t, protocol::NUM_SALT_BYTES>& salt) -> SecureBuffer;
 
   auto decrypt_file(const EncryptionDataRefView& encryption_data) -> SecureBuffer;
 

@@ -14,13 +14,13 @@ auto FileManager::get_directory_path() -> fs::path{
   const char* xdg_data{std::getenv("XDG_DATA_HOME")};
 
   if (xdg_data != nullptr){
-    return fs::path(xdg_data) / constants::APP_NAME;
+    return fs::path(xdg_data) / project::APP_NAME;
   }
 
   const char* home{std::getenv("HOME")};
 
   if (home != nullptr){
-    return fs::path(xdg_data) / ".local" / "share" / constants::APP_NAME;
+    return fs::path(xdg_data) / ".local" / "share" / project::APP_NAME;
   }
 
   throw "XDG_DATA_HOME and HOME enviroment variables are not set";
@@ -30,7 +30,7 @@ auto FileManager::get_directory_path() -> fs::path{
   const char* app_data{std::getenv("APPDATA")};
 
   if (app_data != nullptr){
-    return fs::path(app_data) / constants::APP_NAME;
+    return fs::path(app_data) / project::APP_NAME;
   }
 
   throw "APPDATA enviroment variable not set";

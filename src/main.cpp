@@ -29,6 +29,8 @@ using Salt = std::array<uint8_t, constants::NUM_SALT_BYTES>;
 auto main() -> int{
   // crypto_pwhash();
 
+  // std::cout << 
+
   constexpr std::string_view PASSWORD{"PigeonsAreReallyCool12345!"};
 
   SecureBuffer password_holder{PASSWORD.length()};
@@ -42,18 +44,28 @@ auto main() -> int{
   std::cout << sizeof(salt) << '\n'; 
   std::cout << sizeof(nonce) << '\n';
 
-  SecureBuffer key{ crypto_engine::hash_key(password_holder, salt) };  
-
+  SecureBuffer key{};
+  try{
+    key = crypto_engine::hash_key(password_holder, salt);  
+  }
+  catch (const char* e)
+  {
+    std::cout << e;
+    std::exit(0);
+  }
+  std::cout << "testing " << key.get_length() << '\n';
+  
   std::cout << magic_identifiers::Site;
 
-  constexpr std::array<std::byte, 18> MESSAGE
+  std::cout << "finished 1\n";
+
+  constexpr std::array<std::byte, 16> MESSAGE
   {
     std::byte{magic_identifiers::Initial}, // start identifier
     std::byte{magic_identifiers::Site}, // site identifier
 
     std::byte{0}, // length 1
-    std::byte{0}, // lenght 2
-    std::byte{6}, // length 3
+    std::byte{6}, // length 2
 
     // github
     std::byte{0x67}, 
@@ -67,9 +79,8 @@ auto main() -> int{
     std::byte{magic_identifiers::Username},
 
     //length
-    std::byte{0},
     std::byte{0}, 
-    std::byte{0},
+    std::byte{3},
 
     // dog 
     std::byte{0x64}, 
@@ -81,14 +92,20 @@ auto main() -> int{
   constexpr std::string_view ADDITIONAL_DATA{"publicdatahere"};
   std::array<unsigned char, crypto_aead_aegis256_ABYTES+MESSAGE.size()> ciphertext{};
 
+  
+  std::cout << "finished 2\n";
   unsigned long long cipher_text_len{ciphertext.size()};
+
+  std::cout << key.get_length() << '\n';
+  std::cout << crypto_aead_aegis256_KEYBYTES << '\n';
   crypto_aead_aegis256_encrypt(ciphertext.data(), &cipher_text_len,
                              std::bit_cast<unsigned char*>(MESSAGE.data()), MESSAGE.size(),
                              std::bit_cast<unsigned char*>(ADDITIONAL_DATA.data()), ADDITIONAL_DATA.length(),
                              nullptr, nonce.data(),
                              std::bit_cast<unsigned char*>(key.get_read_ptr()));
 
-
+  
+  std::cout << "finished 3\n";
  // write to file
 
   std::ofstream file{"output.encrypted", std::ios::binary};

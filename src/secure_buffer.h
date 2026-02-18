@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <vector>
 
+
 class SecureBuffer{
 public:
   SecureBuffer() = default;
@@ -12,10 +13,18 @@ public:
 
   ~SecureBuffer() noexcept;
 
+  SecureBuffer(const SecureBuffer& other) = delete;
+
+  SecureBuffer(SecureBuffer&& other) noexcept = default;
+
+  auto operator=(const SecureBuffer& other) -> SecureBuffer& = delete;
+
+  auto operator=(SecureBuffer&& other) noexcept -> SecureBuffer& = default;
+  
   void set_length();
 
   [[nodiscard]]
-  auto get_length() const -> unsigned long long { return buffer_.size(); }
+  auto get_length() const -> unsigned long long { return buffer_.capacity(); }
 
   [[nodiscard]]
   auto get_write_ptr() -> std::byte*;

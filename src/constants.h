@@ -2,24 +2,40 @@
 
 
 #include <cstddef>
+#include <cstdint>
 #include <sodium/crypto_aead_aegis256.h>
 #include <sodium/crypto_box.h>
 #include <sodium/crypto_pwhash.h>
 #include <string_view>
 #include <sodium.h>
 
-namespace constants
+namespace project
 {
   inline constexpr std::string_view APP_NAME{ "password_manager" }; 
-  inline constexpr std::size_t NUM_SALT_BYTES{ crypto_pwhash_SALTBYTES };  
-  inline constexpr std::size_t NUM_KEY_HASH_BYTES{ crypto_box_SEEDBYTES };
-  inline constexpr std::size_t NUM_NONCE_BYTES{ crypto_aead_aegis256_NPUBBYTES };
 }
 
-
-namespace magic_identifiers
+namespace protocol
 {
-  enum MAGIC_IDENTIFIERS
+
+  
+  inline constexpr std::size_t NUM_HEADER_NAME_BYTES{ 8 };
+  inline constexpr std::size_t NUM_ITERATIONS_BYTES{ 1 };
+  inline constexpr std::size_t NUM_ENTRY_COUNT_BYTES{ 2 };
+  inline constexpr std::size_t NUM_SALT_BYTES{ crypto_pwhash_SALTBYTES };  
+  inline constexpr std::size_t NUM_NONCE_BYTES{ crypto_aead_aegis256_NPUBBYTES };
+
+  inline constexpr std::string_view HEADER_NAME_VALUE{"\0Encrypt"};
+  inline constexpr std::size_t TOTAL_HEADER_BYTES{  NUM_HEADER_NAME_BYTES
+                                                  + NUM_ITERATIONS_BYTES
+                                                  + NUM_ENTRY_COUNT_BYTES
+                                                  + NUM_SALT_BYTES
+                                                  + NUM_NONCE_BYTES};
+
+  inline constexpr std::size_t NUM_KEY_HASH_BYTES{ crypto_aead_aegis256_KEYBYTES };
+
+  
+
+  enum class MagicIdentifer : std::uint8_t
   {
     Initial = 0,
 
@@ -31,3 +47,5 @@ namespace magic_identifiers
     DatemModified = 6
   };
 }
+
+
