@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include <exception>
 #include <filesystem>
 #include <sodium.h>
 #include <sodium/crypto_pwhash_argon2id.h>
@@ -14,11 +13,12 @@
 #include <fstream>
 #include <iostream>
 #include <sys/types.h>
+
 #include "constants.h"
 #include "crypto_engine.h"
 #include "secure_buffer.h"
 #include "file_manager.h"
-
+#include "utils.h"
 
 constexpr std::string_view PASSWORD{"PigeonsAreReallyCool12345!"};
 
@@ -29,11 +29,19 @@ void write_binary(std::ofstream& file, const T& value)
   file.write(std::bit_cast<const char*>(&value), sizeof(value)); 
 }
 
+template<std::size_t N>
+void write_binary(std::ofstream& file, const char (&value)[N])
+{
+  // make sure we dont include the null terminator
+  file.write(value, N-1); 
+}
+
+
 using Nonce = std::array<uint8_t, protocol::NUM_NONCE_BYTES>;
 using Salt = std::array<uint8_t, protocol::NUM_SALT_BYTES>;
 
 
-void create_test_file(fs::path path)
+void create_test_file(const fs::path& path)
 {
 
   SecureBuffer password_holder{PASSWORD.length()};
@@ -112,7 +120,7 @@ void create_test_file(fs::path path)
   write_binary(file, static_cast<uint8_t>(1)); // iterations
   write_binary(file, static_cast<uint16_t>(1)); // entry count
 
-  write_binary(file, ciphertext); // actuall encrypted data
+  write_binary(file, ciphertext); // actual encrypted data
 
 
 }
@@ -120,26 +128,25 @@ void create_test_file(fs::path path)
 auto main() -> int
 {
   FileManager file_manager{};
+
+  fs::path user_path{file_manager.get_user_path("default")};
+
   if (!file_manager.does_directory_exist())
   {
     file_manager.create_directory();
   }
-
-
-  fs::path path{file_manager.get_path() / project::PASSOWRD_LIST_DIR / "default"};
-
-  path.replace_extension(project::FILE_EXTENSION);
-
-  create_test_file(path);  
-
+  
+  file_manager.delete_user("default");
+  if (!file_manager.does_user_exist("default"))
+  {
+    create_test_file(user_path);  
+  }
 
   SecureBuffer password{PASSWORD.length()};
-
   std::copy(PASSWORD.begin(), PASSWORD.end(), std::bit_cast<char*>(password.get_write_ptr()));
-  std::cout << "cecrytping file\n";
 
   try{
-        crypto_engine::decrypt_file(path, password);
+    crypto_engine::decrypt_file(user_path, password);
   }
   catch(const char* exception)
   {

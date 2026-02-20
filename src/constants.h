@@ -11,22 +11,23 @@
 
 namespace project
 {
-  inline constexpr std::string_view APP_NAME{ "password_manager" }; 
+  inline constexpr std::string_view APP_NAME{ "password-manager" }; 
 
-  inline constexpr std::string_view PASSOWRD_LIST_DIR{ "passwords_list" };
+  inline constexpr std::string_view PASSWORD_LIST_DIR{ "passwords-list" };
   inline constexpr std::string_view FILE_EXTENSION{ ".encrypted" };
 }
 
 namespace protocol
 {
-  inline constexpr std::size_t NUM_HEADER_NAME_BYTES{ 8 };
+  inline constexpr std::size_t NUM_MAGIC_NAME_BYTES{ 8 };
   inline constexpr std::size_t NUM_ITERATIONS_BYTES{ 1 };
   inline constexpr std::size_t NUM_ENTRY_COUNT_BYTES{ 2 };
   inline constexpr std::size_t NUM_SALT_BYTES{ crypto_pwhash_SALTBYTES };  
   inline constexpr std::size_t NUM_NONCE_BYTES{ crypto_aead_aegis256_NPUBBYTES };
 
-  inline constexpr std::string_view HEADER_NAME_VALUE{"\0Encrypt", NUM_HEADER_NAME_BYTES};
-  inline constexpr std::size_t TOTAL_HEADER_BYTES{  NUM_HEADER_NAME_BYTES
+  
+  inline constexpr std::string_view MAGIC_HEADER_NAME_VALUE{"\0Encrypt", NUM_MAGIC_NAME_BYTES};
+  inline constexpr std::size_t TOTAL_HEADER_BYTES{  NUM_MAGIC_NAME_BYTES
                                                   + NUM_ITERATIONS_BYTES
                                                   + NUM_ENTRY_COUNT_BYTES
                                                   + NUM_SALT_BYTES
