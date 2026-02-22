@@ -8,6 +8,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(password_manager LANGUAGES CXX)
 
 # add_subdirectory(dependencies/FTXUI)
+add_subdirectory(dependencies/json)
 
 #make sure be got pkgconfig
 find_package(PkgConfig REQUIRED)
@@ -28,7 +29,6 @@ add_executable(password_manager
         
     src/constants.h
 )
-
 target_compile_features(password_manager PRIVATE cxx_std_20)
 
 # use those prefixed SODIUM Varibale
@@ -37,10 +37,12 @@ target_include_directories(password_manager
         ${SODIUM_INLUDE_DIRS}
 )
 
+
 target_link_libraries(password_manager
     PRIVATE
         # ftxui::screen
         # ftxui::dom
         # ftxui::component
         ${SODIUM_LIBRARIES}
+        nlohmann_json::nlohmann_json
 )

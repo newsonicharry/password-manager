@@ -24,13 +24,13 @@ public:
   void set_length();
 
   [[nodiscard]]
-  auto get_length() const -> unsigned long long { return buffer_.capacity(); }
+  auto size() const -> unsigned long long { return buffer_.capacity(); }
 
   [[nodiscard]]
   auto get_write_ptr() -> std::byte*;
 
   [[nodiscard]]
-  auto get_read_ptr() -> const std::byte* { return buffer_.data(); }
+  auto get_read_ptr() const -> const std::byte* { return buffer_.data(); }
   
   auto operator[](std::size_t index) -> const std::byte&;
     

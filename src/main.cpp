@@ -13,12 +13,11 @@
 #include <fstream>
 #include <iostream>
 #include <sys/types.h>
-
 #include "constants.h"
 #include "crypto_engine.h"
+#include "exception.h"
 #include "secure_buffer.h"
 #include "file_manager.h"
-#include "utils.h"
 
 constexpr std::string_view PASSWORD{"PigeonsAreReallyCool12345!"};
 
@@ -30,15 +29,15 @@ void write_binary(std::ofstream& file, const T& value)
 }
 
 template<std::size_t N>
-void write_binary(std::ofstream& file, const char (&value)[N])
+void write_binary(std::ofstream& file, const char(&value)[N])
 {
   // make sure we dont include the null terminator
   file.write(value, N-1); 
 }
 
 
-using Nonce = std::array<uint8_t, protocol::NUM_NONCE_BYTES>;
-using Salt = std::array<uint8_t, protocol::NUM_SALT_BYTES>;
+using Nonce = std::array<std::byte, protocol::NUM_NONCE_BYTES>;
+using Salt = std::array<std::byte, protocol::NUM_SALT_BYTES>;
 
 
 void create_test_file(const fs::path& path)
@@ -95,16 +94,25 @@ void create_test_file(const fs::path& path)
   };
 
   
-  constexpr std::string_view ADDITIONAL_DATA{"publicdatahere"};
-  std::array<unsigned char, crypto_aead_aegis256_ABYTES+MESSAGE.size()> ciphertext{};
+  std::vector<std::byte> additional_data; 
+  const uint16_t entry_count{1};
+  const uint64_t message_size{MESSAGE.size()};
 
+  std::copy(nonce.begin(), nonce.end(), std::back_inserter(additional_data));
+  std::copy(salt.begin(), salt.end(), std::back_inserter(additional_data));
+  additional_data.push_back(static_cast<std::byte>(1));
+  // sketchy code but works for the sake of testing
+  std::copy(std::bit_cast<std::byte*>(&entry_count), std::bit_cast<std::byte*>(&entry_count)+2, std::back_inserter(additional_data));
+  std::copy(std::bit_cast<std::byte*>(&message_size), std::bit_cast<std::byte*>(&message_size)+8, std::back_inserter(additional_data));
+
+  std::array<unsigned char, crypto_aead_aegis256_ABYTES+MESSAGE.size()> ciphertext{};
   
   unsigned long long cipher_text_len{ciphertext.size()};
 
   crypto_aead_aegis256_encrypt(ciphertext.data(), &cipher_text_len,
                              std::bit_cast<unsigned char*>(MESSAGE.data()), MESSAGE.size(),
-                             std::bit_cast<unsigned char*>(ADDITIONAL_DATA.data()), ADDITIONAL_DATA.length(),
-                             nullptr, nonce.data(),
+                             std::bit_cast<unsigned char*>(additional_data.data()), additional_data.size(),
+                             nullptr, std::bit_cast<unsigned char*>(nonce.data()),
                              std::bit_cast<unsigned char*>(key.get_read_ptr()));
 
 
@@ -120,6 +128,8 @@ void create_test_file(const fs::path& path)
   write_binary(file, static_cast<uint8_t>(1)); // iterations
   write_binary(file, static_cast<uint16_t>(1)); // entry count
 
+  write_binary(file, static_cast<uint64_t>(MESSAGE.size())); // file size
+  
   write_binary(file, ciphertext); // actual encrypted data
 
 
@@ -127,6 +137,8 @@ void create_test_file(const fs::path& path)
 
 auto main() -> int
 {
+
+
   FileManager file_manager{};
 
   fs::path user_path{file_manager.get_user_path("default")};
@@ -135,47 +147,26 @@ auto main() -> int
   {
     file_manager.create_directory();
   }
-  
   file_manager.delete_user("default");
   if (!file_manager.does_user_exist("default"))
   {
     create_test_file(user_path);  
   }
-
+  
   SecureBuffer password{PASSWORD.length()};
   std::copy(PASSWORD.begin(), PASSWORD.end(), std::bit_cast<char*>(password.get_write_ptr()));
 
+  // crypto_engine::decrypt_file(user_path, password);
   try{
     crypto_engine::decrypt_file(user_path, password);
   }
-  catch(const char* exception)
+  catch(const Exception& exception)
   {
-    std::cout << exception;
-  } 
-
+    std::cout << exception.what();
+  }
+  // std::cout << "no exception?\n";
   
-  // crypto_pwhash();
-
-  // std::cout << 
-
-    // std::array<unsigned char, MESSAGE.size()+1> decrypted{};
-  // decrypted[MESSAGE.length()] = 0; // null terminator at the end, should only be used for strings that are printed
-  // unsigned long long decrypted_len = MESSAGE.length();
   
-  // if (0 == crypto_aead_aegis256_decrypt(decrypted.data(), &decrypted_len,
-  //                                nullptr,
-  //                                ciphertext.data(), ciphertext.size(),
-  //                                std::bit_cast<unsigned char*>(ADDITIONAL_DATA.data()), ADDITIONAL_DATA.length(),
-  //                                nonce.data(),
-  //                                std::bit_cast<unsigned char*>(key.get_read_ptr())))
-  // {
-  //   std::cout << decrypted.data() << '\n';
-  // }
-  // else
-  // {
-  //   std::cout << "failed to decrypt\n";
-  // }
-
   return 0;
 }
 

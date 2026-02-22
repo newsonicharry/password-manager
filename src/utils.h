@@ -3,15 +3,27 @@
 #include <array>
 #include <cstddef>
 #include <iostream>
+#include <iterator>
 
-template<typename T, std::size_t N>
-void print_array(std::array<T, N>& array)
+template<typename T>
+void print_container(T& container, bool print_as_char = false)
 {
   std::cout << '[';
-  for (std::size_t i{0}; i<array.size()-1; i++)
+  for (std::size_t i{0}; i<std::size(container); i++)
   {
-    std::cout << static_cast<int>(array[i]) << ',';
-  }
-  std::cout << static_cast<int>(array[array.size()-1]) << "]\n";
-}
+    if (print_as_char)
+    {
+      std::cout << static_cast<char>(container[i]);
+    }
+    else{
+      std::cout << static_cast<int>(container[i]);
+    }
 
+    if (i < std::size(container)-1)
+    {
+      std::cout << ',';
+    }
+    
+  }
+  std::cout << "]\n";
+}

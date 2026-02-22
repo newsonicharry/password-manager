@@ -24,14 +24,17 @@ namespace protocol
   inline constexpr std::size_t NUM_ENTRY_COUNT_BYTES{ 2 };
   inline constexpr std::size_t NUM_SALT_BYTES{ crypto_pwhash_SALTBYTES };  
   inline constexpr std::size_t NUM_NONCE_BYTES{ crypto_aead_aegis256_NPUBBYTES };
-
+  inline constexpr std::size_t NUM_MESSAGE_SIZE_BYTES{ 8 };
   
   inline constexpr std::string_view MAGIC_HEADER_NAME_VALUE{"\0Encrypt", NUM_MAGIC_NAME_BYTES};
   inline constexpr std::size_t TOTAL_HEADER_BYTES{  NUM_MAGIC_NAME_BYTES
                                                   + NUM_ITERATIONS_BYTES
                                                   + NUM_ENTRY_COUNT_BYTES
                                                   + NUM_SALT_BYTES
-                                                  + NUM_NONCE_BYTES};
+                                                  + NUM_NONCE_BYTES
+                                                  + NUM_MESSAGE_SIZE_BYTES };
+
+  inline constexpr std::size_t TOTAL_ADDITIONAL_DATA_BYTES{ TOTAL_HEADER_BYTES - NUM_MAGIC_NAME_BYTES };
 
   inline constexpr std::size_t NUM_KEY_HASH_BYTES{ crypto_aead_aegis256_KEYBYTES };
 
