@@ -18,6 +18,7 @@
 #include "exception.h"
 #include "secure_buffer.h"
 #include "file_manager.h"
+#include "converter.h"
 
 constexpr std::string_view PASSWORD{"PigeonsAreReallyCool12345!"};
 
@@ -156,7 +157,6 @@ auto main() -> int
   SecureBuffer password{PASSWORD.length()};
   std::copy(PASSWORD.begin(), PASSWORD.end(), std::bit_cast<char*>(password.get_write_ptr()));
 
-  // crypto_engine::decrypt_file(user_path, password);
   try{
     crypto_engine::decrypt_file(user_path, password);
   }
@@ -164,7 +164,15 @@ auto main() -> int
   {
     std::cout << exception.what();
   }
-  // std::cout << "no exception?\n";
+
+  try
+  {
+    SecureBuffer converted_bitwarden{convert_from_bitwarden_json("/home/harry-phillips/Downloads/export.json")};
+  }
+  catch(const Exception& exception)
+  {
+    std::cout << exception.what();
+  }  
   
   
   return 0;

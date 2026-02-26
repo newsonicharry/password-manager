@@ -1,10 +1,11 @@
 #include "file_manager.h"
 #include "constants.h"
+#include "exception.h"
 #include <filesystem>
+#include <ios>
 #include <string_view>
 #include <sodium.h>
-#include <iostream>
-
+#include <fstream>
 
 auto FileManager::find_directory_path() -> fs::path{
 #ifdef __linux__
@@ -22,7 +23,7 @@ auto FileManager::find_directory_path() -> fs::path{
     return fs::path(home) / ".local" / "share" / project::APP_NAME;
   }
   
-  throw "XDG_DATA_HOME and HOME enviroment variables are not set";
+  throw Exception("XDG_DATA_HOME and HOME enviroment variables are not set.\n", Exception::ExceptionType::FileError);
   
 #elif _WIN32
 
@@ -32,11 +33,11 @@ auto FileManager::find_directory_path() -> fs::path{
     return fs::path(app_data) / project::APP_NAME;
   }
 
-  throw "APPDATA enviroment variable not set";
+  throw Exception("APPDATA enviroment variable not set.\n", Exception::ExceptionType::FileError);
 
 #else
 
-  throw "You are on an unsupported platform";
+  throw Exception("You are on an unsupported platform.\n", Exception::ExceptionType::FileError);
 
 #endif
   
@@ -57,37 +58,53 @@ void FileManager::create_directory()
 }
 
 
-auto FileManager::does_user_exist(std::string_view username) -> bool
+auto FileManager::does_user_exist(std::string_view username) const -> bool
 {
   return fs::exists(get_user_path(username));
 }  
 
-void FileManager::delete_user(std::string_view username)
+void FileManager::delete_user(std::string_view username) const
 {
   fs::remove(get_user_path(username));
 }
 
 
-auto FileManager::get_user_path(std::string_view username) -> fs::path
+auto FileManager::get_user_path(std::string_view username) const -> fs::path
 {
+  if (!does_user_exist(username))
+  {
+    throw Exception("Given user does not exist.\n", Exception::ExceptionType::FileError);  
+  }
+
   fs::path user_path {directory_path_ / project::PASSWORD_LIST_DIR / username};
   user_path.replace_extension(project::FILE_EXTENSION);
 
   return user_path;
-
 }
 
 
-void FileManager::decrypt_to_secure_buffer(SecureBuffer& secure_buffer, std::string_view username)
+void FileManager::write_user_data(std::string_view username, const std::vector<std::byte>& encrypted_data) const
 {
-  
-  if (!does_user_exist(username))
+
+  fs::path user_path{get_user_path(username)};
+
+  fs::path temp_user_path{user_path};
+  temp_user_path.replace_extension(project::FILE_EXTENSION_TEMP);
+
+  fs::rename(user_path, temp_user_path);
+
+  std::ofstream file{user_path};
+
+  if (!file.is_open())
   {
-    throw "Expected user file does not exist";
+    fs::rename(temp_user_path, user_path);
+    throw Exception("Failed to create user passwords file.\n", Exception::ExceptionType::FileError);
   }
 
-  fs::path file_path{ directory_path_ / project::PASSWORD_LIST_DIR / username };
-  file_path.replace_extension(project::FILE_EXTENSION);
+  file.write(std::bit_cast<char*>(encrypted_data.data()), static_cast<std::streamsize>(encrypted_data.size()));
+  file.close();
 
+  fs::remove(temp_user_path);
 }
+
 

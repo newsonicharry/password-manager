@@ -12,7 +12,6 @@ class VaultService{
 public:
   VaultService() = default;
 
-  [[nodiscard]]
   void create_dir_if_not_exists();
 
 

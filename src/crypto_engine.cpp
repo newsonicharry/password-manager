@@ -31,13 +31,6 @@ struct FileHeaders
   uint64_t message_size;
 };
 
-template<typename T>
-void update_additional_data_from_integral(std::vector<std::byte>& additional_data, T integral)
-{
-  const std::span integral_as_bytes{std::as_bytes(std::span{&integral, 1})};
-  std::copy(integral_as_bytes.begin(), integral_as_bytes.end(), std::back_inserter(additional_data));
-}
-
 auto get_additional_data(const FileHeaders& file_headers) -> std::vector<std::byte>
 { 
   std::vector<std::byte> additional_data;
@@ -46,9 +39,9 @@ auto get_additional_data(const FileHeaders& file_headers) -> std::vector<std::by
   std::copy(file_headers.nonce.begin(), file_headers.nonce.end(), std::back_inserter(additional_data));
   std::copy(file_headers.salt.begin(), file_headers.salt.end(), std::back_inserter(additional_data));
 
-  update_additional_data_from_integral(additional_data, file_headers.iterations);
-  update_additional_data_from_integral(additional_data, file_headers.entry_count);
-  update_additional_data_from_integral(additional_data, file_headers.message_size);
+  back_insert_vec(additional_data, file_headers.iterations);
+  back_insert_vec(additional_data, file_headers.entry_count);
+  back_insert_vec(additional_data, file_headers.message_size);
 
   return additional_data;
 }

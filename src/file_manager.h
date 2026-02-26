@@ -1,8 +1,9 @@
 #pragma once
 
+#include <cstddef>
 #include <filesystem>
 #include <string_view>
-#include "secure_buffer.h"
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -13,11 +14,16 @@ public:
   auto does_directory_exist() -> bool;
   void create_directory();  
  
-  auto get_user_path(std::string_view username) -> fs::path;
-  auto does_user_exist(std::string_view username) -> bool;
-  void delete_user(std::string_view username);
+  [[nodiscard]]
+  auto get_user_path(std::string_view username) const -> fs::path;
 
-  void decrypt_to_secure_buffer(SecureBuffer& secure_buffer, std::string_view username);
+  [[nodiscard]]
+  auto does_user_exist(std::string_view username) const -> bool;
+
+  void delete_user(std::string_view username) const;
+
+  void write_user_data(std::string_view username, const std::vector<std::byte>& encrypted_data) const;
+    
 
   [[nodiscard]]
   auto get_directory_path() -> fs::path{ return directory_path_; };  
@@ -27,8 +33,8 @@ private:
 
   fs::path directory_path_{find_directory_path()};
 
-
-  
+    
 };
+
 
 

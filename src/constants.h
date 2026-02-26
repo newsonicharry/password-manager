@@ -15,6 +15,7 @@ namespace project
 
   inline constexpr std::string_view PASSWORD_LIST_DIR{ "passwords-list" };
   inline constexpr std::string_view FILE_EXTENSION{ ".encrypted" };
+  inline constexpr std::string_view FILE_EXTENSION_TEMP{ ".tempencrypted" };
 }
 
 namespace protocol

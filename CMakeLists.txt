@@ -26,7 +26,11 @@ add_executable(password_manager
 
     src/file_manager.h
     src/file_manager.cpp
-        
+
+    src/converter.h
+    src/converter.cpp
+
+    src/exception.h    
     src/constants.h
 )
 target_compile_features(password_manager PRIVATE cxx_std_20)
