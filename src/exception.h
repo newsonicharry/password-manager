@@ -12,6 +12,7 @@ public:
     FileError,
     DecryptionError,
     BitwardenConversionError,
+    ParsingError,
   };
 
   Exception(const std::string& error_msg, ExceptionType error_type)

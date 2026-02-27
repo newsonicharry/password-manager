@@ -50,7 +50,9 @@ namespace protocol
     Password = 3,
     Note = 4,
     DateCreated = 5,
-    DatemModified = 6
+    DatemModified = 6,
+
+    Size = 7,
   };
 }
 

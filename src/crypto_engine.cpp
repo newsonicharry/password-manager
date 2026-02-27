@@ -3,6 +3,7 @@
 #include "secure_buffer.h"
 #include "utils.h"
 #include "exception.h"
+#include "vault_serializer.h"
 #include <array>
 #include <bit>
 #include <cstddef>
@@ -10,7 +11,6 @@
 #include <filesystem>
 #include <fstream>
 #include <ios>
-#include <iterator>
 #include <sodium/crypto_pwhash.h>
 #include <iostream>
 #include <span>
@@ -22,22 +22,14 @@ namespace
 
 // general helpers
 
-struct FileHeaders
-{
-  std::span<const std::byte, protocol::NUM_NONCE_BYTES> nonce; 
-  std::span<const std::byte, protocol::NUM_SALT_BYTES> salt;
-  uint8_t iterations;
-  uint16_t entry_count;
-  uint64_t message_size;
-};
 
 auto get_additional_data(const FileHeaders& file_headers) -> std::vector<std::byte>
 { 
   std::vector<std::byte> additional_data;
 
   // loads the additional data
-  std::copy(file_headers.nonce.begin(), file_headers.nonce.end(), std::back_inserter(additional_data));
-  std::copy(file_headers.salt.begin(), file_headers.salt.end(), std::back_inserter(additional_data));
+  back_insert_vec(additional_data, file_headers.nonce.begin());
+  back_insert_vec(additional_data, file_headers.salt.begin());
 
   back_insert_vec(additional_data, file_headers.iterations);
   back_insert_vec(additional_data, file_headers.entry_count);

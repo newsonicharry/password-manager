@@ -1,5 +1,4 @@
 #include "password_entry.h"
-#include "secure_buffer.h"
 #include <chrono>
 #include <cstddef>
 #include <cstring>
@@ -9,12 +8,12 @@
 
 // helpers
 
-auto PasswordEntry::get_string_from_entry(std::span<std::byte> entry) -> std::string_view
+auto PasswordEntry::get_string_from_entry(std::span<const std::byte> entry) -> std::string_view
 {
   return std::string_view {std::bit_cast<char*>(entry.data()), entry.size()};
 }
 
-auto PasswordEntry::get_date_from_entry(std::span<std::byte> entry) -> std::chrono::sys_seconds
+auto PasswordEntry::get_date_from_entry(std::span<const std::byte> entry) -> std::chrono::sys_seconds
 {
   
   std::time_t created_date{};

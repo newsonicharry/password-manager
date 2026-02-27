@@ -5,6 +5,7 @@
 #include <vector>
 
 
+
 class SecureBuffer{
 public:
   SecureBuffer() = default;
@@ -21,8 +22,6 @@ public:
 
   auto operator=(SecureBuffer&& other) noexcept -> SecureBuffer& = default;
   
-  void set_length();
-
   [[nodiscard]]
   auto size() const -> unsigned long long { return buffer_.capacity(); }
 
@@ -31,8 +30,15 @@ public:
 
   [[nodiscard]]
   auto get_read_ptr() const -> const std::byte* { return buffer_.data(); }
+
+  [[nodiscard]]
+  auto begin() const -> std::vector<std::byte>::const_iterator { return buffer_.begin(); }
+
+  [[nodiscard]]
+  auto end() const -> std::vector<std::byte>::const_iterator { return buffer_.end(); }
   
-  auto operator[](std::size_t index) -> const std::byte&;
+  
+  auto operator[](std::size_t index) const -> const std::byte&;
     
 private:
   std::vector<std::byte> buffer_{};

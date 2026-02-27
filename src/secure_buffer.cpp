@@ -23,7 +23,7 @@ SecureBuffer::~SecureBuffer() noexcept
 }
 
 
-auto SecureBuffer::operator[](std::size_t index) -> const std::byte&
+auto SecureBuffer::operator[](std::size_t index) const -> const std::byte&
 {
   assert(buffer_.capacity() > 0 && "No data in secure buffer");
   return buffer_[index];
