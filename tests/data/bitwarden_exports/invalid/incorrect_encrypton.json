@@ -1,0 +1,31 @@
+{
+  "encrypted": true,
+  "encKeyValidation_DO_NOT_EDIT": "2.XjIs154ia/dkp6PVl1gnkg==|tQl1lsufPCIkpyrvkmvYyQyYUFEbcUYVVwX4jP2cSk+P4tbZiiKlsCw5e7u2EaRx|6NtaBgnnEk2FqZEoerccYin32s1eg6rnxboZiTMlPoQ=",
+  "folders": [
+    {
+      "id": "ef5ea8d5-123e-4ced-b194-b074001e4f3b",
+      "name": "2.2X6foIvg6+Qogq+/s0Cafw==|zMJT0osUiQ4r9pNdMDv0Cw==|DgroDTGL516VdDt2rLgmBvcXxjXr2Fvhax/6fONUJ4Q="
+    }
+  ],
+  "items": [
+    {
+      "passwordHistory": null,
+      "revisionDate": "2023-08-13T04:40:46.566Z",
+      "creationDate": "2023-08-13T04:40:46.566Z",
+      "id": "0e41d300-2fe4-4422-9b02-b05d004d1e70",
+      "organizationId": null,
+      "folderId": null,
+      "type": 1,
+      "reprompt": 0,
+      "name": "2.0MKZfn6f5YDoIK+Q4hSKkA==|H3dXUyIxHC8T9P1+uTHIkQ==|CQ7W8U2lferpaMWrBEohq7zffWGa70OD0ZTle5yPfok=",
+      "notes": null,
+      "favorite": false,
+      "login": {
+        "username": "2.NkJtNwv/RhjNCD44muO46g==|cpf5MGYNXDJeJGguHg4rUA==|Usl2elSsOpe2DA07Gy9Q+F89eMhqGR5m7pqlPEq6C8k=",
+        "password": "2.684RnPIpv6TiZdbX0/sZEw==|MER96PLFVglwy8VtagTz5mm5ivr/OHAuS9trvFnahzyI=|YxBAbpRvO499818iy2mt+I7le4KujXq9Z7qnZ5cvcGE=",
+        "totp": null
+      },
+      "collectionIds": null
+    }
+  ]
+}

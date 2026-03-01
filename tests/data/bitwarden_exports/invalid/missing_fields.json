@@ -1,0 +1,45 @@
+{
+  "encrypted": false,
+
+  "items":[
+    {
+      "passwordHistory": [],
+      "revisionDate": "2025-10-15T15:46:12.083Z",
+      "creationDate": "2025-10-15T15:46:12.083Z",
+      "id": "22817e5f-cb35-4d88-958c-b3770103e1cc",
+      "type": 1,
+      "reprompt": 0,
+      "notes": null,
+      "favorite": false,
+      "fields": [],
+      "login": {
+        "uris": [],
+        "fido2Credentials": [],
+        "username": "my username",
+        "password": "password134",
+        "totp": null
+      },
+      "collectionIds": null
+    },
+    {
+      "passwordHistory": [],
+      "revisionDate": "2025-10-15T15:46:12.083Z",
+      "creationDate": "2025-10-15T15:46:12.083Z",
+      "id": "22817e5f-cb35-4d88-958c-b3770103e1cc",
+      "reprompt": 0,
+      "name": "second site",
+      "notes": null,
+      "favorite": false,
+      "fields": [],
+      "login": {
+        "uris": [],
+        "fido2Credentials": [],
+        "username": "my username",
+        "password": "password",
+        "totp": null
+      },
+      "collectionIds": null
+    }      
+        
+  ]
+}

@@ -1,5 +1,6 @@
 #include "vault_serializer.h"
 #include "constants.h"
+#include "crypto_engine.h"
 #include "exception.h"
 #include "password_entry.h"
 #include "secure_buffer.h"
@@ -9,6 +10,7 @@
 #include <cstring>
 #include <vector>
 #include <bitset>
+#include <iostream>
 
 using MagicIdentifier = protocol::MagicIdentifer;
 
@@ -24,17 +26,24 @@ constexpr std::size_t NUM_ENTRY_HEADER_BYTES{NUM_MAGIC_IDENTIFIER_BYTES + NUM_LE
 namespace
 {
 
-auto parse_entry(std::size_t& index, const SecureBuffer& vault_data, const FileHeaders& file_headers) -> PasswordEntry
+auto parse_entry(std::size_t& index, const SecureBuffer& vault_data) -> PasswordEntry
 {
-  Offsets offsets{};
-  std::bitset<static_cast<std::size_t>(MagicIdentifier::Size)> identifiers_found;
+  Slices offsets{};
 
-  if (static_cast<uint8_t>(vault_data[0]) != static_cast<uint8_t>(MagicIdentifier::Initial))
+  if (static_cast<uint8_t>(vault_data[index]) != static_cast<uint8_t>(MagicIdentifier::Initial))
   {
     throw Exception("First byte did not start with an inital identifier.\n", Exception::ExceptionType::ParsingError);
   }
+  index++;
 
-  while(index < file_headers.message_size && !identifiers_found.all())
+
+  // a list of true and false of weather we have found a certain identifier 
+  std::bitset<static_cast<std::size_t>(MagicIdentifier::Size)> identifiers_found{};
+  // we can assume the first identifier exists as the if statment before confirmed its existance
+  identifiers_found.set(static_cast<std::size_t>(MagicIdentifier::Initial));
+
+  // we continue checking until we have run out of data or we have found all the identifiers
+  while(index < vault_data.size() && !identifiers_found.all())
   {
     // make sure at least 3 bytes exist to parse the magic identifier and length
     const std::size_t remaining_bytes{vault_data.size() - index};
@@ -46,7 +55,7 @@ auto parse_entry(std::size_t& index, const SecureBuffer& vault_data, const FileH
     // verifys the magic identifier
     uint8_t raw_magic_identifier{static_cast<uint8_t>(vault_data[index])};
 
-    if (raw_magic_identifier >= static_cast<uint8_t>(MagicIdentifier::Size) || raw_magic_identifier == static_cast<uint8_t>(MagicIdentifier::Initial))
+    if (raw_magic_identifier >= static_cast<uint8_t>(MagicIdentifier::Size))
     {
       throw Exception("Magic identifier given is not a valid magic identifier.\n", Exception::ExceptionType::ParsingError);
     }
@@ -64,8 +73,9 @@ auto parse_entry(std::size_t& index, const SecureBuffer& vault_data, const FileH
     uint16_t length{};
     std::memcpy(&length, &vault_data[index+NUM_MAGIC_IDENTIFIER_BYTES], NUM_LENGTH_BYTES);
 
+    // 
     // check if the entry length is less than or equal to the remaining message size  
-    if ((remaining_bytes-NUM_ENTRY_HEADER_BYTES) < file_headers.message_size)
+    if ((index+length+NUM_ENTRY_HEADER_BYTES) > vault_data.size())
     {
       throw Exception("There is not enough bytes to parse from the length of the entry in vault entry.\n", Exception::ExceptionType::ParsingError);
     }
@@ -83,27 +93,43 @@ auto parse_entry(std::size_t& index, const SecureBuffer& vault_data, const FileH
 }// unnammed namespace
 
 
-auto vault_serializer::parse_user_vault(const SecureBuffer& vault_data, const FileHeaders& file_headers) -> std::vector<PasswordEntry>
+auto vault_serializer::parse_user_vault(const SecureBuffer& vault_data) -> std::vector<PasswordEntry>
 {
-  // this should not assert, though I don't wish to make that assumption
-  assert(file_headers.message_size != vault_data.size() && "Message size and vault size should be equal");
-
-  if (file_headers.message_size != vault_data.size())
-  {
-    throw Exception("Message size not equal to vault size.\n", Exception::ExceptionType::ParsingError);
-  }
-
   std::vector<PasswordEntry> entries{};
-
 
   int num_found_entries{0};
   std::size_t index{0};
-  while (index < file_headers.message_size && num_found_entries < file_headers.entry_count)
+  // loops while we either still have data left
+  while (index < vault_data.size())
   {
-    entries.push_back(parse_entry(index, vault_data, file_headers));
+    // parse entry updates the index for the next entr
+    entries.push_back(parse_entry(index, vault_data));
     num_found_entries++;
   }
 
   return entries;
 }
+
+
+auto vault_serializer::generate_new_headers(const std::vector<PasswordEntry>& entries) -> FileHeaders
+{
+  const auto nonce{crypto_engine::generate_random_buffer<protocol::NUM_NONCE_BYTES>()};
+  const auto salt{crypto_engine::generate_random_buffer<protocol::NUM_SALT_BYTES>()};
+
+  const uint8_t iterations{protocol::DEFAULT_ITERATIONS};
+  const uint16_t entry_count{static_cast<uint16_t>(entries.size())};
+
+  uint64_t message_size{};
+  for (const auto& entry : entries)
+  {
+    // the bytes to store just the real password entry data
+    message_size += entry.get_num_bytes_stored();
+    // the bytes to store the magic identifier and legnth for each password entry
+    message_size += NUM_ENTRY_HEADER_BYTES * static_cast<uint64_t>(MagicIdentifier::Size); 
+  }
+
+  FileHeaders headers{nonce, salt, iterations, entry_count, message_size};
+  
+  return headers;
+} 
 

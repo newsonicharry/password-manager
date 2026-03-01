@@ -71,14 +71,9 @@ void FileManager::delete_user(std::string_view username) const
 
 auto FileManager::get_user_path(std::string_view username) const -> fs::path
 {
-  if (!does_user_exist(username))
-  {
-    throw Exception("Given user does not exist.\n", Exception::ExceptionType::FileError);  
-  }
-
   fs::path user_path {directory_path_ / project::PASSWORD_LIST_DIR / username};
   user_path.replace_extension(project::FILE_EXTENSION);
-
+ 
   return user_path;
 }
 

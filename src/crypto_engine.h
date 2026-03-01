@@ -23,8 +23,8 @@ struct EncryptionDataRefView
   fs::path file_path;
   std::string_view message;
   std::string_view additional_data;
-  std::span<std::array<unsigned char, crypto_aead_aegis256_NPUBBYTES>> nonce;
-  std::span<SecureBuffer> key;
+  std::span<const std::byte> nonce;
+  std::span<const std::byte> key;
 };
 
 template <std::size_t N>

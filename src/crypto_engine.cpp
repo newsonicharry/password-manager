@@ -28,8 +28,8 @@ auto get_additional_data(const FileHeaders& file_headers) -> std::vector<std::by
   std::vector<std::byte> additional_data;
 
   // loads the additional data
-  back_insert_vec(additional_data, file_headers.nonce.begin());
-  back_insert_vec(additional_data, file_headers.salt.begin());
+  back_insert_vec(additional_data, file_headers.nonce);
+  back_insert_vec(additional_data, file_headers.salt);
 
   back_insert_vec(additional_data, file_headers.iterations);
   back_insert_vec(additional_data, file_headers.entry_count);

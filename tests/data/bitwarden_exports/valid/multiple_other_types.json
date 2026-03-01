@@ -1,0 +1,135 @@
+{
+  "encrypted": false,
+
+  "items": [
+    {
+      "passwordHistory": [],
+      "revisionDate": "2024-06-28T00:30:59.040Z",
+      "creationDate": "2024-06-28T00:30:59.040Z",
+      "id": "61bdc1fa-74b4-46bb-8b6e-b19d00088291",
+      "type": 1,
+      "reprompt": 0,
+      "name": "site1",
+      "notes": null,
+      "favorite": false,
+      "fields": [],
+      "login": {
+        "uris": [],
+        "fido2Credentials": [],
+        "username": "my username",
+        "password": "my password",
+        "totp": null
+      },
+      "collectionIds": null
+    },
+    {
+      "passwordHistory": [],
+      "revisionDate": "2023-09-05T01:51:06.543Z",
+      "creationDate": "2023-09-05T01:51:06.543Z",
+      "id": "09329ae1-4287-4c2b-a018-b074001e84ec",
+      "folderId": "ef5ea8d5-123e-4ced-b194-b074001e4f3b",
+      "type": 2,
+      "reprompt": 0,
+      "name": "note name",
+      "notes": null,
+      "favorite": false,
+      "fields": [],
+      "secureNote": {
+        "type": 0
+      },
+      "collectionIds": null
+    },
+    {
+      "passwordHistory": [],
+      "revisionDate": "2026-02-27T17:24:33.876Z",
+      "creationDate": "2026-02-27T17:24:33.876Z",
+      "id": "03bd8bc9-79a1-47bb-96b7-b3fe011ee5f6",
+      "type": 3,
+      "reprompt": 0,
+      "name": "testcard",
+      "notes": null,
+      "favorite": false,
+      "fields": [],
+      "card": {
+        "cardholderName": "asfdas",
+        "brand": null,
+        "number": "12341",
+        "expMonth": null,
+        "expYear": null,
+        "code": null
+      },
+      "collectionIds": null
+    },
+    {
+      "passwordHistory": [],
+      "revisionDate": "2026-02-27T17:24:48.176Z",
+      "creationDate": "2026-02-27T17:24:48.176Z",
+      "id": "662a9a59-94d0-4b0b-9654-b3fe011ef6b7",
+      "type": 4,
+      "reprompt": 0,
+      "name": "test identifiery",
+      "notes": null,
+      "favorite": false,
+      "fields": [],
+      "identity": {
+        "title": null,
+        "firstName": "my name",
+        "middleName": null,
+        "lastName": null,
+        "address1": null,
+        "address2": null,
+        "address3": null,
+        "city": null,
+        "state": null,
+        "postalCode": null,
+        "country": null,
+        "company": null,
+        "email": null,
+        "phone": null,
+        "ssn": null,
+        "username": null,
+        "passportNumber": null,
+        "licenseNumber": null
+      },
+      "collectionIds": null
+    },
+    {
+      "passwordHistory": [],
+      "revisionDate": "2026-02-27T17:25:02.150Z",
+      "creationDate": "2026-02-27T17:25:02.150Z",
+      "id": "c4706abb-de6c-455b-8525-b3fe011f0718",
+      "type": 5,
+      "reprompt": 0,
+      "name": "test ssh key",
+      "notes": null,
+      "favorite": false,
+      "fields": [],
+      "sshKey": {
+        "privateKey": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\nQyNTUxOQAAACBKVUwHgKxbnTUSjDGxf5zpiiW6NnS32acQcJMMq8jo5wAAAIic7crBnO3K\nwQAAAAtzc2gtZWQyNTUxOQAAACBKVUwHgKxbnTUSjDGxf5zpiiW6NnS32acQcJMMq8jo5w\nAAAED7UkjOp8QRSjPR3PrfPEcCuwzZARofqCBA6t44Mhd5PEpVTAeArFudNRKMMbF/nOmK\nJbo2dLfZpxBwkwyryOjnAAAAAAECAwQF\n-----END OPENSSH PRIVATE KEY-----\n",
+        "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEpVTAeArFudNRKMMbF/nOmKJbo2dLfZpxBwkwyryOjn",
+        "keyFingerprint": "SHA256:nd0qTIqkUEcUYFqUU0iIpmPzGissu6wqUIQibe1YNj8"
+      },
+      "collectionIds": null
+    },
+    {
+      "passwordHistory": [],
+      "revisionDate": "2023-01-01T04:54:46.720Z",
+      "creationDate": "2023-01-01T04:54:46.720Z",
+      "id": "b815a20b-c045-48c2-91c3-af7d0050f6a6",
+      "type": 1,
+      "reprompt": 0,
+      "name": "site 2",
+      "notes": null,
+      "favorite": false,
+      "fields": [],
+      "login": {
+        "uris": [],
+        "fido2Credentials": [],
+        "username": "my username",
+        "password": "my password",
+        "totp": null
+      },
+      "collectionIds": null
+    },    
+  ]
+}

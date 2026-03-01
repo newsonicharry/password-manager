@@ -39,7 +39,7 @@ namespace protocol
 
   inline constexpr std::size_t NUM_KEY_HASH_BYTES{ crypto_aead_aegis256_KEYBYTES };
 
-  
+  inline constexpr uint8_t DEFAULT_ITERATIONS{1};  
 
   enum class MagicIdentifer : std::uint8_t
   {
@@ -50,7 +50,7 @@ namespace protocol
     Password = 3,
     Note = 4,
     DateCreated = 5,
-    DatemModified = 6,
+    DateModified = 6,
 
     Size = 7,
   };

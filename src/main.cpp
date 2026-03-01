@@ -16,9 +16,13 @@
 #include "constants.h"
 #include "crypto_engine.h"
 #include "exception.h"
+#include "password_entry.h"
 #include "secure_buffer.h"
 #include "file_manager.h"
 #include "converter.h"
+#include "utils.h"
+#include "vault_serializer.h"
+
 
 constexpr std::string_view PASSWORD{"PigeonsAreReallyCool12345!"};
 
@@ -106,6 +110,7 @@ void create_test_file(const fs::path& path)
   std::copy(std::bit_cast<std::byte*>(&entry_count), std::bit_cast<std::byte*>(&entry_count)+2, std::back_inserter(additional_data));
   std::copy(std::bit_cast<std::byte*>(&message_size), std::bit_cast<std::byte*>(&message_size)+8, std::back_inserter(additional_data));
 
+  
   std::array<unsigned char, crypto_aead_aegis256_ABYTES+MESSAGE.size()> ciphertext{};
   
   unsigned long long cipher_text_len{ciphertext.size()};
@@ -139,40 +144,45 @@ void create_test_file(const fs::path& path)
 auto main() -> int
 {
 
-
-  FileManager file_manager{};
-
-  fs::path user_path{file_manager.get_user_path("default")};
-
-  if (!file_manager.does_directory_exist())
-  {
-    file_manager.create_directory();
-  }
-  file_manager.delete_user("default");
-  if (!file_manager.does_user_exist("default"))
-  {
-    create_test_file(user_path);  
-  }
+  // FileManager file_manager{};
   
-  SecureBuffer password{PASSWORD.length()};
-  std::copy(PASSWORD.begin(), PASSWORD.end(), std::bit_cast<char*>(password.get_write_ptr()));
+  // fs::path user_path{file_manager.get_user_path("default")};
 
-  try{
-    crypto_engine::decrypt_file(user_path, password);
-  }
-  catch(const Exception& exception)
-  {
-    std::cout << exception.what();
-  }
+  // if (!file_manager.does_directory_exist())
+  // {
+  //   file_manager.create_directory();
+  // }
+  // file_manager.delete_user("default");
+  // if (!file_manager.does_user_exist("default"))
+  // {
+  //   create_test_file(user_path);  
+  // }
+  
+  // SecureBuffer password{PASSWORD.length()};
+  // std::copy(PASSWORD.begin(), PASSWORD.end(), std::bit_cast<char*>(password.get_write_ptr()));
+
+  // try{
+  //   crypto_engine::decrypt_file(user_path, password);
+  // }
+  // catch(const Exception& exception)
+  // {
+  //   std::cout << exception.what();
+  // }
 
   try
   {
-    SecureBuffer converted_bitwarden{convert_from_bitwarden_json("/home/harry-phillips/Downloads/export.json")};
-  }
+    SecureBuffer converted_bitwarden{convert_from_bitwarden_json("../tests/data/bitwarden_exports/valid/simple.json")};
+
+
+    std::vector<PasswordEntry> entries {vault_serializer::parse_user_vault(converted_bitwarden)};  
+    std::cout << entries[0].get_password() << '\n';
+
+ }
   catch(const Exception& exception)
   {
     std::cout << exception.what();
-  }  
+  }
+  
   
   
   return 0;

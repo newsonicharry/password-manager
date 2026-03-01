@@ -1,0 +1,47 @@
+[
+  {
+    "_id": "69a2545acd74b218d9dfee78",
+    "index": 0,
+    "guid": "d972f9f3-e251-4384-afb9-b5e4e2c160c9",
+    "isActive": true,
+    "balance": "$2,236.07",
+    "picture": "http://placehold.it/32x32",
+    "age": 38,
+    "eyeColor": "green",
+    "name": "Virgie Reilly",
+    "gender": "female",
+    "company": "ESSENSIA",
+    "email": "virgiereilly@essensia.com",
+    "phone": "+1 (922) 460-3203",
+    "address": "953 Lee Avenue, Terlingua, Washington, 1732",
+    "about": "Enim ipsum commodo ex anim tempor elit. Aliquip duis irure duis mollit laboris esse mollit et enim velit. Labore commodo magna irure est aute. Sunt duis culpa magna ex duis nostrud exercitation consectetur. Sint pariatur adipisicing et quis reprehenderit nulla ut ullamco adipisicing consequat sit ullamco. Cupidatat proident Lorem anim et exercitation tempor aliqua aliquip quis quis elit.\r\n",
+    "registered": "2016-04-17T04:11:49 +05:00",
+    "latitude": -28.876277,
+    "longitude": -39.99129,
+    "tags": [
+      "quis",
+      "esse",
+      "commodo",
+      "enim",
+      "adipisicing",
+      "enim",
+      "esse"
+    ],
+    "friends": [
+      {
+        "id": 0,
+        "name": "Tanya Patrick"
+      },
+      {
+        "id": 1,
+        "name": "Browning Schwartz"
+      },
+      {
+        "id": 2,
+        "name": "Owen Adams"
+      }
+    ],
+    "greeting": "Hello, Virgie Reilly! You have 9 unread messages.",
+    "favoriteFruit": "banana"
+  }
+]
