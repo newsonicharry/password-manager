@@ -33,7 +33,6 @@ void print_container(T& container, bool print_as_char = false)
 }
 
 
-
 template<typename T>
 void back_insert_vec(std::vector<std::byte>& vec, T&& data)
 {

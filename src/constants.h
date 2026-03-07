@@ -54,6 +54,11 @@ namespace protocol
 
     Size = 7,
   };
+
+  constexpr std::size_t start_identifier{static_cast<std::size_t>(MagicIdentifer::Initial)+1};
+  constexpr std::size_t end_identifier{static_cast<std::size_t>(MagicIdentifer::Size)};
+
+  
 }
 
 

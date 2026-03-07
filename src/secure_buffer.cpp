@@ -4,23 +4,41 @@
 #include <cstring>
 #include <sodium.h>
 #include <sodium/utils.h>
+#include <iostream>
 
 
-SecureBuffer::SecureBuffer(unsigned long long length)
+SecureBuffer::SecureBuffer(std::size_t length)
 {
   buffer_.reserve(length);
+  
   sodium_mlock(buffer_.data(), length);
 }
 
 
 SecureBuffer::~SecureBuffer() noexcept
 {
-  if (buffer_.size() == 0){
+  if (buffer_.size() == 0)
+  {
     return;
   }
-  
+
   sodium_memzero(buffer_.data(), buffer_.size());
 }
+
+
+auto SecureBuffer::operator=(SecureBuffer&& other) noexcept -> SecureBuffer&
+{
+  if (this == &other)
+  {
+    return *this;  
+  }
+
+  sodium_memzero(buffer_.data(), buffer_.size());
+  buffer_ = std::move(other.buffer_);
+    
+  return *this;
+}
+
 
 
 auto SecureBuffer::operator[](std::size_t index) const -> const std::byte&
@@ -39,3 +57,5 @@ auto SecureBuffer::get_write_ptr() -> std::byte*
 
   return buffer_.data();
 }
+
+

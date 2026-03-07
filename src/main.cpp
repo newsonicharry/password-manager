@@ -18,9 +18,7 @@
 #include "exception.h"
 #include "password_entry.h"
 #include "secure_buffer.h"
-#include "file_manager.h"
 #include "converter.h"
-#include "utils.h"
 #include "vault_serializer.h"
 
 
@@ -169,14 +167,26 @@ auto main() -> int
   //   std::cout << exception.what();
   // }
 
+
+
   try
   {
     SecureBuffer converted_bitwarden{convert_from_bitwarden_json("../tests/data/bitwarden_exports/valid/simple.json")};
 
 
     std::vector<PasswordEntry> entries {vault_serializer::parse_user_vault(converted_bitwarden)};  
-    std::cout << entries[0].get_password() << '\n';
+    // PasswordEntry& entry{entries[0]};
 
+
+    constexpr std::string_view NEW_PASSWORD{"NewPassword"};
+
+    SecureBuffer new_password{NEW_PASSWORD.length()};    
+    std::copy(std::bit_cast<std::byte*>(NEW_PASSWORD.begin()), std::bit_cast<std::byte*>(NEW_PASSWORD.end()), new_password.get_write_ptr());   
+
+    entries[0].modify(MagicIdentifier::Password, new_password);
+    std::cout << entries[0].get_password() << '\n';
+    
+    
  }
   catch(const Exception& exception)
   {

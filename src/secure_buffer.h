@@ -10,7 +10,7 @@ class SecureBuffer{
 public:
   SecureBuffer() = default;
   
-  SecureBuffer(unsigned long long length);
+  SecureBuffer(std::size_t length);
 
   ~SecureBuffer() noexcept;
 
@@ -20,7 +20,10 @@ public:
 
   auto operator=(const SecureBuffer& other) -> SecureBuffer& = delete;
 
-  auto operator=(SecureBuffer&& other) noexcept -> SecureBuffer& = default;
+  auto operator=(SecureBuffer&& other) noexcept -> SecureBuffer&;
+
+  // useful for writing using a pointer but the .size() doesnt actually change
+  void resize_to_capacity() {buffer_.resize(buffer_.capacity());}
   
   [[nodiscard]]
   auto size() const -> unsigned long long { return buffer_.capacity(); }
@@ -32,16 +35,15 @@ public:
   auto get_read_ptr() const -> const std::byte* { return buffer_.data(); }
 
   [[nodiscard]]
-  auto begin() const -> std::vector<std::byte>::const_iterator { return buffer_.begin(); }
+  auto begin() const -> const std::byte* { return buffer_.data(); }
 
   [[nodiscard]]
-  auto end() const -> std::vector<std::byte>::const_iterator { return buffer_.end(); }
-  
-  
+  auto end() const -> const std::byte* { return buffer_.data()+size(); }
+    
   auto operator[](std::size_t index) const -> const std::byte&;
+
     
 private:
   std::vector<std::byte> buffer_{};
-  bool has_data_{};
 };
 

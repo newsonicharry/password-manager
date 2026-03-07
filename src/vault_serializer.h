@@ -25,7 +25,8 @@ namespace vault_serializer
   auto parse_user_vault(const SecureBuffer& vault_data) -> std::vector<PasswordEntry>;
 
   auto generate_new_headers(const std::vector<PasswordEntry>& entries) -> FileHeaders; 
-  
+
+    
   // general file_header struct
 
   // file parser

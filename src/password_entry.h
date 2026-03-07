@@ -44,6 +44,9 @@ public:
   [[nodiscard]] auto get_date_modified() const -> std::chrono::sys_seconds;
 
   [[nodiscard]] auto get_num_bytes_stored() const -> std::size_t{ return entry_.size(); }
+
+  void modify(MagicIdentifier identifier, const SecureBuffer& new_identifier_data);
+
  private:
   Slices entry_offset_{};
   SecureBuffer entry_{};

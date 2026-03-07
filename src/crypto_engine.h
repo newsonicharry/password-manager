@@ -2,14 +2,15 @@
 
 #include "secure_buffer.h"
 #include "constants.h"
+#include "vault_serializer.h"
 #include <array>
 #include <cstddef>
 #include <sodium.h>
 #include <sodium/crypto_aead_aegis256.h>
 #include <sodium/crypto_pwhash.h>
-#include <string_view>
 #include <span>
 #include <filesystem>
+#include <sys/types.h>
 
 namespace fs = std::filesystem;
 
@@ -21,9 +22,7 @@ namespace crypto_engine
 struct EncryptionDataRefView
 {
   fs::path file_path;
-  std::string_view message;
-  std::string_view additional_data;
-  std::span<const std::byte> nonce;
+  std::span<const std::byte> message;
   std::span<const std::byte> key;
 };
 
@@ -42,8 +41,7 @@ auto hash_key(const SecureBuffer& password, const std::array<std::byte, protocol
 
 auto decrypt_file(fs::path& file_path, const SecureBuffer& password) -> SecureBuffer;
 
-void encrypt_file(const EncryptionDataRefView& encryption_data);
-
+auto encrypt_file(const EncryptionDataRefView& encryption_data, const FileHeaders& file_headers) -> std::vector<std::byte>;
 
 }
 

@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "exception.h"
 #include "vault_serializer.h"
+#include <algorithm>
 #include <array>
 #include <bit>
 #include <cstddef>
@@ -11,6 +12,9 @@
 #include <filesystem>
 #include <fstream>
 #include <ios>
+#include <sodium/crypto_aead_aegis256.h>
+#include <sodium.h>
+#include <sodium/crypto_aead_aes256gcm.h>
 #include <sodium/crypto_pwhash.h>
 #include <iostream>
 #include <span>
@@ -119,6 +123,14 @@ auto decrypt_from_file_or_throw(std::ifstream& file, const DecryptionDataRefView
   return decrypted_data;
 }
 
+// encryption helpers
+
+template<typename T>
+void write_binary(std::ofstream& file, const T& value)
+{
+  file.write(std::bit_cast<const char*>(&value), sizeof(value)); 
+}
+
 
 } // unnamed namespace
 
@@ -171,3 +183,31 @@ auto crypto_engine::decrypt_file(fs::path& file_path, const SecureBuffer& passwo
 }
 
 
+auto crypto_engine::encrypt_file(const EncryptionDataRefView& encryption_data, const FileHeaders& file_headers) -> std::vector<std::byte>
+{
+  const std::vector<std::byte> additional_data{get_additional_data(file_headers)};
+
+  std::vector<unsigned char> ciphertext(crypto_aead_aegis256_ABYTES+encryption_data.message.size());
+  
+  unsigned long long cipher_text_len{ciphertext.size()};
+
+  crypto_aead_aegis256_encrypt(ciphertext.data(), &cipher_text_len,
+                             std::bit_cast<unsigned char*>(encryption_data.message.data()), encryption_data.message.size(),
+                             std::bit_cast<unsigned char*>(additional_data.data()), additional_data.size(),
+                             nullptr, std::bit_cast<unsigned char*>(file_headers.nonce.data()),
+                             std::bit_cast<unsigned char*>(encryption_data.key.data()));
+
+
+  // the final data we are writing to file
+  // this includes all the headers
+  std::vector<std::byte> data_on_file;
+
+  back_insert_vec(data_on_file, protocol::MAGIC_HEADER_NAME_VALUE);
+
+  // additional data is simply the combined header excluding the magic name at the beginning
+  back_insert_vec(data_on_file, additional_data); 
+
+  back_insert_vec(data_on_file, ciphertext);
+
+  return data_on_file;
+}

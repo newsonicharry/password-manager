@@ -1,12 +1,16 @@
 #include "password_entry.h"
+#include "constants.h"
 #include "exception.h"
 #include "secure_buffer.h"
+#include "utils.h"
+#include <algorithm>
+#include <cassert>
 #include <chrono>
 #include <cstddef>
 #include <cstring>
 #include <ctime>
-#include <iterator>
 #include <string_view>
+#include <iostream>
 
 // offset members
 
@@ -72,7 +76,7 @@ auto PasswordEntry::get_date_from_entry(std::span<const std::byte> entry) -> std
   std::time_t created_date{};
   std::memcpy(&created_date, entry.data(), entry.size()); 
 
-  std::chrono::sys_seconds time{std::chrono::seconds(created_date)};
+  const std::chrono::sys_seconds time{std::chrono::seconds(created_date)};
 
   return time;
 }
@@ -110,8 +114,56 @@ auto PasswordEntry::get_date_modified() const -> std::chrono::sys_seconds
   return get_date_from_entry(entry_offset_.date_modified);
 }
 
-// constructor
+// modifier
+// todo: PLEASE HEAVILY TEST THIS FUNCTION, POINTER ARITHMETIC IS SCARY
+void PasswordEntry::modify(MagicIdentifier identifier, const SecureBuffer& new_identifier_data)
+{
+  const auto slice{entry_offset_.get(identifier)};
 
+  const std::size_t new_entry_size{entry_.size() - slice.size() + new_identifier_data.size()}; 
+
+  SecureBuffer new_entry{new_entry_size};
+
+  std::byte* write_ptr{new_entry.get_write_ptr()};
+
+  //updates the data with in new secure_buffer
+
+  // the number of bytes between the start of the entry and the potion of the entry holding the old identifier data
+  std::ptrdiff_t num_start_elements{slice.data() - entry_.get_read_ptr()};
+
+  std::copy(entry_.get_read_ptr(), entry_.get_read_ptr()+num_start_elements, write_ptr); 
+  write_ptr += num_start_elements;
+
+   
+  std::copy(new_identifier_data.begin(), new_identifier_data.end(), write_ptr);
+  // std::copy(new_identifier_data.get_read_ptr(), new_identifier_data.get_read_ptr()+new_identifier_data.size(), write_ptr);
+  write_ptr += new_identifier_data.size();
+  
+  const std::size_t written_elements{num_start_elements + new_identifier_data.size()};
+  std::copy(entry_.get_read_ptr()+written_elements, entry_.get_read_ptr()+entry_.size(), write_ptr);
+
+  // this is only to update the size of the new data
+  // at this point every old slice is considered invalid and pointing to old memory
+  // though techincally we have not yet moved the new memory in yet
+  entry_offset_.set(identifier, std::span{std::bit_cast<std::byte*>(nullptr), new_identifier_data.size()});
+
+  // updates the new pointers to the memory allocated in the new_entry
+  const std::byte* pointer{new_entry.get_read_ptr()};
+  for (std::size_t raw_identifier{protocol::start_identifier}; raw_identifier < protocol::end_identifier; raw_identifier++)
+  {
+    const MagicIdentifier identifier{static_cast<MagicIdentifier>(raw_identifier)};
+    std::size_t identifier_size {entry_offset_.get(identifier).size()};
+
+    entry_offset_.set(identifier, std::span{pointer, identifier_size});
+    pointer += identifier_size;
+    
+  }
+  
+  entry_ = std::move(new_entry);
+}
+
+
+// constructor
 
 PasswordEntry::PasswordEntry(const SecureBuffer& vault, const Slices& vault_offsets)
 {
@@ -133,7 +185,7 @@ PasswordEntry::PasswordEntry(const SecureBuffer& vault, const Slices& vault_offs
     std::copy(slice.begin(), slice.end(), write_ptr);
     // saves that data into my slice struct
     local_slice.set(identifier, std::span{write_ptr, slice.size()});
-
+    
     // updates the pointer to the correct next spot in the vector
     write_ptr += slice.size();
   }
@@ -141,4 +193,6 @@ PasswordEntry::PasswordEntry(const SecureBuffer& vault, const Slices& vault_offs
   entry_ = std::move(combined_entry_data);
   entry_offset_ = local_slice;  
 }
+
+
 
