@@ -1,200 +1,73 @@
-#include <algorithm>
-#include <bit>
-#include <cstddef>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <filesystem>
-#include <sodium.h>
-#include <sodium/crypto_pwhash_argon2id.h>
-#include <sodium/crypto_aead_aegis256.h>
-#include <array>
-#include <string_view>
-#include <fstream>
-#include <iostream>
-#include <sys/types.h>
-#include "constants.h"
-#include "crypto_engine.h"
-#include "exception.h"
-#include "password_entry.h"
+#include "file_manager.h"
 #include "secure_buffer.h"
-#include "converter.h"
-#include "vault_serializer.h"
+#include "vault.h"
+#include <filesystem>
+#include <iostream>
+#include <string_view>
+
+constexpr std::string_view PASSWORD_STRING{"pigeonsarecool123"};
 
 
-constexpr std::string_view PASSWORD{"PigeonsAreReallyCool12345!"};
-
-
-template<typename T>
-void write_binary(std::ofstream& file, const T& value)
+void create_new_vault_from_bitwarden(std::string_view username, std::string_view password_string)
 {
-  file.write(std::bit_cast<const char*>(&value), sizeof(value)); 
+  auto vault {Vault::convert_from_bitwarden(username, fs::path("../tests/data/bitwarden_exports/valid/simple.json"))};
+
+  if (!vault)
+  {
+    std::cout << vault.error().what();
+    return;
+  }
+
+  for (const auto& entry : vault->list_entries())
+  {
+    std::cout << entry.get_password() << '\n';
+  }
+
+  SecureBuffer password_buffer{password_string.length()};
+  std::copy(std::bit_cast<std::byte*>(password_string.begin()), std::bit_cast<std::byte*>(password_string.end()), password_buffer.get_write_ptr());
+
+  vault->encrypt_to_file(password_buffer);
 }
 
-template<std::size_t N>
-void write_binary(std::ofstream& file, const char(&value)[N])
+void open_existing_vault(std::string_view username, std::string_view password_string)
 {
-  // make sure we dont include the null terminator
-  file.write(value, N-1); 
+
+  SecureBuffer password_buffer{password_string.length()};
+  std::copy(std::bit_cast<std::byte*>(password_string.begin()), std::bit_cast<std::byte*>(password_string.end()), password_buffer.get_write_ptr());
+
+
+  auto vault {Vault::open_existing(username, password_buffer)};
+
+  if (!vault)
+  {
+    std::cout << vault.error().what();
+    return;
+  }
+
+  for (const auto& entry : vault->list_entries())
+  {
+    std::cout << entry.get_password() << '\n';
+  }
+
+  vault->encrypt_to_file(password_buffer);
 }
 
-
-using Nonce = std::array<std::byte, protocol::NUM_NONCE_BYTES>;
-using Salt = std::array<std::byte, protocol::NUM_SALT_BYTES>;
-
-
-void create_test_file(const fs::path& path)
+void create_new_vault(std::string_view username)
 {
-
-  SecureBuffer password_holder{PASSWORD.length()};
-  std::copy(PASSWORD.begin(), PASSWORD.end(), std::bit_cast<char*>(password_holder.get_write_ptr()));
-
-  
-  Salt salt{ crypto_engine::generate_random_buffer<protocol::NUM_SALT_BYTES>() };
-  Nonce nonce{ crypto_engine::generate_random_buffer<protocol::NUM_NONCE_BYTES>() };
-
   
 
-  SecureBuffer key{};
-  try{
-    key = crypto_engine::hash_key(password_holder, salt);  
-  }
-  catch (const char* e)
-  {
-    std::cout << e;
-    std::exit(0);
-  }
   
-
-
-  constexpr std::array<std::byte, 16> MESSAGE
-  {
-    std::byte{static_cast<uint8_t>(protocol::MagicIdentifer::Initial)}, // start identifier
-    std::byte{static_cast<uint8_t>(protocol::MagicIdentifer::Site)}, // site identifier
-
-    std::byte{0}, // length 1
-    std::byte{6}, // length 2
-
-    // github
-    std::byte{0x67}, 
-    std::byte{0x69}, 
-    std::byte{0x74},
-    std::byte{0x68},
-    std::byte{0x75},
-    std::byte{0x62},
-
-    // username identifer
-    std::byte{static_cast<uint8_t>(protocol::MagicIdentifer::Username)},
-
-    //length
-    std::byte{0}, 
-    std::byte{3},
-
-    // dog 
-    std::byte{0x64}, 
-    std::byte{0x6F}, 
-    std::byte{0x67},
-  };
-
-  
-  std::vector<std::byte> additional_data; 
-  const uint16_t entry_count{1};
-  const uint64_t message_size{MESSAGE.size()};
-
-  std::copy(nonce.begin(), nonce.end(), std::back_inserter(additional_data));
-  std::copy(salt.begin(), salt.end(), std::back_inserter(additional_data));
-  additional_data.push_back(static_cast<std::byte>(1));
-  // sketchy code but works for the sake of testing
-  std::copy(std::bit_cast<std::byte*>(&entry_count), std::bit_cast<std::byte*>(&entry_count)+2, std::back_inserter(additional_data));
-  std::copy(std::bit_cast<std::byte*>(&message_size), std::bit_cast<std::byte*>(&message_size)+8, std::back_inserter(additional_data));
-
-  
-  std::array<unsigned char, crypto_aead_aegis256_ABYTES+MESSAGE.size()> ciphertext{};
-  
-  unsigned long long cipher_text_len{ciphertext.size()};
-
-  crypto_aead_aegis256_encrypt(ciphertext.data(), &cipher_text_len,
-                             std::bit_cast<unsigned char*>(MESSAGE.data()), MESSAGE.size(),
-                             std::bit_cast<unsigned char*>(additional_data.data()), additional_data.size(),
-                             nullptr, std::bit_cast<unsigned char*>(nonce.data()),
-                             std::bit_cast<unsigned char*>(key.get_read_ptr()));
-
-
- // write to file
-
-  std::ofstream file{path, std::ios::binary};
-
-  file.put('\0'); // null nerminator for the magic header
-  write_binary(file, "Encrypt"); // rest of magic header
-  write_binary(file, nonce); // nonce
-  write_binary(file, salt); // salt
-
-  write_binary(file, static_cast<uint8_t>(1)); // iterations
-  write_binary(file, static_cast<uint16_t>(1)); // entry count
-
-  write_binary(file, static_cast<uint64_t>(MESSAGE.size())); // file size
-  
-  write_binary(file, ciphertext); // actual encrypted data
-
-
 }
 
 auto main() -> int
 {
+  FileManager file_manager;
+  // file_manager.delete_user("harry");
 
-  // FileManager file_manager{};
+  // create_new_vault_from_bitwarden("harry", PASSWORD_STRING);  
+  open_existing_vault("harry", PASSWORD_STRING);
   
-  // fs::path user_path{file_manager.get_user_path("default")};
-
-  // if (!file_manager.does_directory_exist())
-  // {
-  //   file_manager.create_directory();
-  // }
-  // file_manager.delete_user("default");
-  // if (!file_manager.does_user_exist("default"))
-  // {
-  //   create_test_file(user_path);  
-  // }
-  
-  // SecureBuffer password{PASSWORD.length()};
-  // std::copy(PASSWORD.begin(), PASSWORD.end(), std::bit_cast<char*>(password.get_write_ptr()));
-
-  // try{
-  //   crypto_engine::decrypt_file(user_path, password);
-  // }
-  // catch(const Exception& exception)
-  // {
-  //   std::cout << exception.what();
-  // }
-
-
-
-  try
-  {
-    SecureBuffer converted_bitwarden{convert_from_bitwarden_json("../tests/data/bitwarden_exports/valid/simple.json")};
-
-
-    std::vector<PasswordEntry> entries {vault_serializer::parse_user_vault(converted_bitwarden)};  
-    // PasswordEntry& entry{entries[0]};
-
-
-    constexpr std::string_view NEW_PASSWORD{"NewPassword"};
-
-    SecureBuffer new_password{NEW_PASSWORD.length()};    
-    std::copy(std::bit_cast<std::byte*>(NEW_PASSWORD.begin()), std::bit_cast<std::byte*>(NEW_PASSWORD.end()), new_password.get_write_ptr());   
-
-    entries[0].modify(MagicIdentifier::Password, new_password);
-    std::cout << entries[0].get_password() << '\n';
-    
-    
- }
-  catch(const Exception& exception)
-  {
-    std::cout << exception.what();
-  }
-  
-  
-  
+   
   return 0;
 }
 

@@ -2,7 +2,6 @@
 #include "constants.h"
 #include "exception.h"
 #include "secure_buffer.h"
-#include "utils.h"
 #include <algorithm>
 #include <cassert>
 #include <chrono>
@@ -10,7 +9,6 @@
 #include <cstring>
 #include <ctime>
 #include <string_view>
-#include <iostream>
 
 // offset members
 
@@ -22,7 +20,7 @@ void Slices::set(MagicIdentifier identifier, std::span<const std::byte> value)
     case MagicIdentifier::Password:      password      = value; break;
     case MagicIdentifier::Note:          note          = value; break;
     case MagicIdentifier::DateCreated:   date_created  = value; break;
-    case MagicIdentifier::DateModified: date_modified = value; break;
+    case MagicIdentifier::DateModified:  date_modified = value; break;
 
     // its expected that the identifier has already been confirmed to be valid before hand
     default:

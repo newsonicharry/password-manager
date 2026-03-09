@@ -22,7 +22,7 @@ SecureBuffer::~SecureBuffer() noexcept
     return;
   }
 
-  sodium_memzero(buffer_.data(), buffer_.size());
+  sodium_memzero(buffer_.data(), buffer_.capacity());
 }
 
 
@@ -33,7 +33,7 @@ auto SecureBuffer::operator=(SecureBuffer&& other) noexcept -> SecureBuffer&
     return *this;  
   }
 
-  sodium_memzero(buffer_.data(), buffer_.size());
+  sodium_memzero(buffer_.data(), buffer_.capacity());
   buffer_ = std::move(other.buffer_);
     
   return *this;

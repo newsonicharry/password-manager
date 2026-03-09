@@ -18,14 +18,6 @@ namespace crypto_engine
 {
 
 
-
-struct EncryptionDataRefView
-{
-  fs::path file_path;
-  std::span<const std::byte> message;
-  std::span<const std::byte> key;
-};
-
 template <std::size_t N>
 auto generate_random_buffer() -> std::array<std::byte, N>
 {  
@@ -37,11 +29,10 @@ auto generate_random_buffer() -> std::array<std::byte, N>
 }
 
 
-auto hash_key(const SecureBuffer& password, const std::array<std::byte, protocol::NUM_SALT_BYTES>& salt) -> SecureBuffer;
+auto hash_key(const SecureBuffer& password, std::span<const std::byte> salt) -> SecureBuffer;
 
-auto decrypt_file(fs::path& file_path, const SecureBuffer& password) -> SecureBuffer;
+auto decrypt_file(const fs::path& file_path, const FileHeaders& file_headers, const SecureBuffer& password) -> SecureBuffer;
 
-auto encrypt_file(const EncryptionDataRefView& encryption_data, const FileHeaders& file_headers) -> std::vector<std::byte>;
-
+auto encrypt_file(const fs::path& file_path, const SecureBuffer& message, const FileHeaders& file_headers, const SecureBuffer& password) -> std::vector<std::byte>;
 }
 

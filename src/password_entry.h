@@ -44,8 +44,11 @@ public:
   [[nodiscard]] auto get_date_modified() const -> std::chrono::sys_seconds;
 
   [[nodiscard]] auto get_num_bytes_stored() const -> std::size_t{ return entry_.size(); }
+  [[nodiscard]] auto get_raw_data() const -> const SecureBuffer&{ return entry_; }
 
   void modify(MagicIdentifier identifier, const SecureBuffer& new_identifier_data);
+  [[nodiscard]]
+  auto get(MagicIdentifier identifier) const -> std::span<const std::byte> { return entry_offset_.get(identifier); }
 
  private:
   Slices entry_offset_{};

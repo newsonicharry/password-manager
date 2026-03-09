@@ -4,11 +4,9 @@
 #include "utils.h"
 #include "exception.h"
 #include "vault_serializer.h"
-#include <algorithm>
 #include <array>
 #include <bit>
 #include <cstddef>
-#include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <ios>
@@ -18,7 +16,6 @@
 #include <sodium/crypto_pwhash.h>
 #include <iostream>
 #include <span>
-#include <string_view>
 #include <vector>
 
 namespace
@@ -52,43 +49,10 @@ struct DecryptionDataRefView
   std::span<const std::byte> key;
 };
 
-auto open_password_file_or_throw(fs::path& file_path) -> std::ifstream
+auto decrypt_from_file_or_throw(const fs::path& file_path, const DecryptionDataRefView& decryption_data) -> SecureBuffer
 {
-
-  if (!fs::exists(file_path))
-  {
-    throw Exception("File path for file to decypt does not exist.\n", Exception::ExceptionType::FileError);
-  }
+  std::ifstream file{file_path};
   
-  std::ifstream file{file_path, std::ios::in | std::ios::binary};
-
-  if (!file)
-  {
-    throw Exception("Failed to open and decrypt file.\n", Exception::ExceptionType::FileError);
-  }
-
-  const std::uintmax_t  size {fs::file_size(file_path)};
-
-  if (size < protocol::TOTAL_HEADER_BYTES)
-  {
-    throw Exception("Header information from file does not exist.\n", Exception::ExceptionType::FileError);
-  }
-
-
-  std::string header_name(protocol::NUM_MAGIC_NAME_BYTES, '1');
-  file.seekg(0, std::ios::beg);
-  file.read(header_name.data(), protocol::NUM_MAGIC_NAME_BYTES);
-
-  if (header_name != protocol::MAGIC_HEADER_NAME_VALUE)
-  {
-    throw Exception("Magic header does not match expected header.\n", Exception::ExceptionType::FileError);
-  }
-
-  return file;
-}
-
-auto decrypt_from_file_or_throw(std::ifstream& file, const DecryptionDataRefView& decryption_data) -> SecureBuffer
-{
   // start at the encrypted data
   file.seekg(protocol::TOTAL_HEADER_BYTES, std::ios::beg);
 
@@ -98,6 +62,11 @@ auto decrypt_from_file_or_throw(std::ifstream& file, const DecryptionDataRefView
   if (remaining_bytes == 0 || decryption_data.file_headers.message_size == 0)
   {
     throw Exception("Encrypted data within file is empty.\n", Exception::ExceptionType::DecryptionError);
+  }
+
+  if (remaining_bytes != decryption_data.file_headers.message_size + crypto_aead_aegis256_ABYTES)
+  {
+    throw Exception("Incorrect number of bytes stored in file.\n", Exception::ExceptionType::DecryptionError);
   }
   
   std::vector<std::byte> ciphertext(remaining_bytes);  
@@ -134,8 +103,10 @@ void write_binary(std::ofstream& file, const T& value)
 
 } // unnamed namespace
 
-auto crypto_engine::hash_key(const SecureBuffer& password, const std::array<std::byte, protocol::NUM_SALT_BYTES>& salt) -> SecureBuffer
+auto crypto_engine::hash_key(const SecureBuffer& password, std::span<const std::byte> salt) -> SecureBuffer
 {
+  assert(salt.size() == protocol::NUM_SALT_BYTES && "Salt must be exactly the size of the number of salt byte.");
+  
   SecureBuffer hashed_key{protocol::NUM_KEY_HASH_BYTES};
 
   if (0 != crypto_pwhash(std::bit_cast<unsigned char*>(hashed_key.get_write_ptr()), hashed_key.size(),
@@ -152,50 +123,36 @@ auto crypto_engine::hash_key(const SecureBuffer& password, const std::array<std:
 
 
 
-auto crypto_engine::decrypt_file(fs::path& file_path, const SecureBuffer& password) -> SecureBuffer
+auto crypto_engine::decrypt_file(const fs::path& file_path, const FileHeaders& file_headers, const SecureBuffer& password) -> SecureBuffer
 {
 
-  std::ifstream file{open_password_file_or_throw(file_path)};
-
-  std::array<std::byte, protocol::NUM_NONCE_BYTES> nonce{}; 
-  std::array<std::byte, protocol::NUM_SALT_BYTES> salt{};
-  
-  uint8_t iterations{};
-  uint16_t entry_count{};
-  uint64_t message_size{};
-
-  file.read(std::bit_cast<char*>(nonce.data()), protocol::NUM_NONCE_BYTES);
-  file.read(std::bit_cast<char*>(salt.data()), protocol::NUM_SALT_BYTES);
-
-  file.read(std::bit_cast<char*>(&iterations), protocol::NUM_ITERATIONS_BYTES);
-  file.read(std::bit_cast<char*>(&entry_count), protocol::NUM_ENTRY_COUNT_BYTES);
-  file.read(std::bit_cast<char*>(&message_size), protocol::NUM_MESSAGE_SIZE_BYTES);
-
-  SecureBuffer key{hash_key(password, salt)};
+  SecureBuffer key{hash_key(password, file_headers.salt)};
   std::span<const std::byte> key_span{key.get_read_ptr(), key.size()};
 
-  const FileHeaders file_headers{nonce, salt, iterations, entry_count, message_size};
   const DecryptionDataRefView decryption_data{file_path, file_headers, key_span};
 
-  SecureBuffer decrypted_file {decrypt_from_file_or_throw(file, decryption_data)};
+  SecureBuffer decrypted_file {decrypt_from_file_or_throw(file_path, decryption_data)};
 
   return decrypted_file;
 }
 
 
-auto crypto_engine::encrypt_file(const EncryptionDataRefView& encryption_data, const FileHeaders& file_headers) -> std::vector<std::byte>
+auto crypto_engine::encrypt_file(const fs::path& file_path, const SecureBuffer& message, const FileHeaders& file_headers, const SecureBuffer& password) -> std::vector<std::byte>
 {
+
+  SecureBuffer key{hash_key(password, file_headers.salt)};
+  
   const std::vector<std::byte> additional_data{get_additional_data(file_headers)};
 
-  std::vector<unsigned char> ciphertext(crypto_aead_aegis256_ABYTES+encryption_data.message.size());
+  std::vector<unsigned char> ciphertext(crypto_aead_aegis256_ABYTES+message.size());
   
   unsigned long long cipher_text_len{ciphertext.size()};
 
   crypto_aead_aegis256_encrypt(ciphertext.data(), &cipher_text_len,
-                             std::bit_cast<unsigned char*>(encryption_data.message.data()), encryption_data.message.size(),
+                             std::bit_cast<unsigned char*>(message.get_read_ptr()), message.size(),
                              std::bit_cast<unsigned char*>(additional_data.data()), additional_data.size(),
                              nullptr, std::bit_cast<unsigned char*>(file_headers.nonce.data()),
-                             std::bit_cast<unsigned char*>(encryption_data.key.data()));
+                             std::bit_cast<unsigned char*>(key.get_read_ptr()));
 
 
   // the final data we are writing to file

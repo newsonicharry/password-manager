@@ -1,0 +1,5 @@
+CompileFlags:
+  Add: 
+    - "-std=c++23"
+    - "-D__cpp_concepts=202002L"
+

@@ -81,12 +81,18 @@ auto FileManager::get_user_path(std::string_view username) const -> fs::path
 void FileManager::write_user_data(std::string_view username, const std::vector<std::byte>& encrypted_data) const
 {
 
+
   fs::path user_path{get_user_path(username)};
 
+
+  // if the file already exists then we don't want to delete it just for the new file to fail to write
+  // if it throws for some reason, so we rename it as a temp and only delete it if it doesnt fail
+  // otherwise it comes back to where it originally was
+  bool is_rewriting_file{does_user_exist(username)};
   fs::path temp_user_path{user_path};
   temp_user_path.replace_extension(project::FILE_EXTENSION_TEMP);
 
-  fs::rename(user_path, temp_user_path);
+  if (is_rewriting_file) { fs::rename(user_path, temp_user_path); }
 
   std::ofstream file{user_path};
 
@@ -99,7 +105,7 @@ void FileManager::write_user_data(std::string_view username, const std::vector<s
   file.write(std::bit_cast<char*>(encrypted_data.data()), static_cast<std::streamsize>(encrypted_data.size()));
   file.close();
 
-  fs::remove(temp_user_path);
+  if (is_rewriting_file){ fs::remove(temp_user_path); }
 }
 
 

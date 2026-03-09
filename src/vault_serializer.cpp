@@ -4,13 +4,17 @@
 #include "exception.h"
 #include "password_entry.h"
 #include "secure_buffer.h"
+#include "utils.h"
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <numeric>
 #include <vector>
 #include <bitset>
 #include <iostream>
+#include <fstream>
+#include <algorithm>
 
 using MagicIdentifier = protocol::MagicIdentifer;
 
@@ -25,6 +29,8 @@ constexpr std::size_t NUM_ENTRY_HEADER_BYTES{NUM_MAGIC_IDENTIFIER_BYTES + NUM_LE
 
 namespace
 {
+
+// parse helpers
 
 auto parse_entry(std::size_t& index, const SecureBuffer& vault_data) -> PasswordEntry
 {
@@ -89,6 +95,43 @@ auto parse_entry(std::size_t& index, const SecureBuffer& vault_data) -> Password
   return PasswordEntry{vault_data, offsets};
 }
 
+// headers helpers
+auto open_password_file_or_throw(const fs::path& file_path) -> std::ifstream
+{
+
+  if (!fs::exists(file_path))
+  {
+    throw Exception("File path for file to decypt does not exist.\n", Exception::ExceptionType::FileError);
+  }
+
+  std::ifstream file{file_path, std::ios::in | std::ios::binary};
+
+  if (!file)
+  {
+    throw Exception("Failed to open and decrypt file.\n", Exception::ExceptionType::FileError);
+  }
+
+  const std::uintmax_t  size {fs::file_size(file_path)};
+
+  if (size < protocol::TOTAL_HEADER_BYTES)
+  {
+    throw Exception("Header information from file does not exist.\n", Exception::ExceptionType::FileError);
+  }
+
+
+  std::string header_name(protocol::NUM_MAGIC_NAME_BYTES, '1');
+  file.seekg(0, std::ios::beg);
+  file.read(header_name.data(), protocol::NUM_MAGIC_NAME_BYTES);
+
+  if (header_name != protocol::MAGIC_HEADER_NAME_VALUE)
+  {
+    throw Exception("Magic header does not match expected header.\n", Exception::ExceptionType::FileError);
+  }
+
+  return file;
+}
+
+
 
 }// unnammed namespace
 
@@ -99,7 +142,7 @@ auto vault_serializer::parse_user_vault(const SecureBuffer& vault_data) -> std::
 
   int num_found_entries{0};
   std::size_t index{0};
-  // loops while we either still have data left
+  // loops while we still have data left
   while (index < vault_data.size())
   {
     // parse entry updates the index for the next entr
@@ -124,8 +167,12 @@ auto vault_serializer::generate_new_headers(const std::vector<PasswordEntry>& en
   {
     // the bytes to store just the real password entry data
     message_size += entry.get_num_bytes_stored();
-    // the bytes to store the magic identifier and legnth for each password entry
-    message_size += NUM_ENTRY_HEADER_BYTES * static_cast<uint64_t>(MagicIdentifier::Size); 
+    // the bytes to store the magic identifier and legnth for each password entry,
+    // -1 because the size includes the inital which we dont store here
+    message_size += NUM_ENTRY_HEADER_BYTES * (static_cast<uint64_t>(MagicIdentifier::Size) - 1); 
+    // theres only one inital which is for this
+    message_size++;
+
   }
 
   FileHeaders headers{nonce, salt, iterations, entry_count, message_size};
@@ -133,3 +180,55 @@ auto vault_serializer::generate_new_headers(const std::vector<PasswordEntry>& en
   return headers;
 } 
 
+
+auto vault_serializer::get_headers_from_path(const fs::path& file_path) -> FileHeaders
+{
+  std::ifstream file{open_password_file_or_throw(file_path)};
+
+  std::array<std::byte, protocol::NUM_NONCE_BYTES> nonce{}; 
+  std::array<std::byte, protocol::NUM_SALT_BYTES> salt{};
+
+  uint8_t iterations{};
+  uint16_t entry_count{};
+  uint64_t message_size{};
+
+  file.read(std::bit_cast<char*>(nonce.data()), protocol::NUM_NONCE_BYTES);
+  file.read(std::bit_cast<char*>(salt.data()), protocol::NUM_SALT_BYTES);
+
+  file.read(std::bit_cast<char*>(&iterations), protocol::NUM_ITERATIONS_BYTES);
+  file.read(std::bit_cast<char*>(&entry_count), protocol::NUM_ENTRY_COUNT_BYTES);
+  file.read(std::bit_cast<char*>(&message_size), protocol::NUM_MESSAGE_SIZE_BYTES);
+
+  return FileHeaders{nonce, salt, iterations, entry_count, message_size};
+  
+}
+
+
+
+auto vault_serializer::convert_entries_to_buffer(const std::vector<PasswordEntry>& entries) -> SecureBuffer
+{
+  // +1 for the inital identifier, and -1 to not include the inital identifier for each identifier entry
+  std::size_t total_binary_size{ std::accumulate(entries.begin(), entries.end(), static_cast<std::size_t>(0), [](std::size_t accumulator, const PasswordEntry& entry)
+  { return accumulator + entry.get_num_bytes_stored() + NUM_ENTRY_HEADER_BYTES * (static_cast<std::size_t>(MagicIdentifier::Size)-1) + 1; })};
+
+  SecureBuffer all_data{total_binary_size};
+
+  std::byte* write_pointer{all_data.get_write_ptr()};
+
+  for (const auto& entry : entries)
+  {
+    const SecureBuffer& raw_entry_data{entry.get_raw_data()};
+
+    // mark each entry starting with an inital identifer
+    insert_into_ptr(write_pointer, static_cast<uint8_t>(protocol::MagicIdentifer::Initial));
+    for (std::size_t identifier{protocol::start_identifier}; identifier < protocol::end_identifier; identifier++)
+    {
+      std::span<const std::byte> raw_identifier_data{entry.get(static_cast<MagicIdentifier>(identifier))};
+      insert_into_ptr(write_pointer, static_cast<uint8_t>(identifier)); // inital identifer
+      insert_into_ptr(write_pointer, static_cast<uint16_t>(raw_identifier_data.size())); // length of the data
+      insert_into_ptr(write_pointer, raw_identifier_data); // finally the raw data
+    }
+    
+  }
+  return all_data;
+}

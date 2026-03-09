@@ -1,48 +1,38 @@
 #pragma once
 
-#include "constants.h"
-#include "crypto_engine.h"
+#include "exception.h"
 #include "file_manager.h"
 #include "password_entry.h"
 #include "secure_buffer.h"
-#include <cstddef>
+#include "vault_serializer.h"
 #include <string_view>
 #include <vector>
+#include <expected>
 
-class Vault{
-public:
-  // Vault
-  Vault();
-
-  void generate_dir_if_not_exists();
-
-  void create_new_user(std::string_view username);
-
-  void try_decrypt_user_data(std::string_view username, const SecureBuffer& password);
-  void try_encrypt_user_data() const;
+//factory design
+class Vault
+{
+public:  
+  static auto create_new(std::string_view username) -> std::expected<Vault, Exception>;
+  static auto open_existing(std::string_view username, const SecureBuffer& password) -> std::expected<Vault, Exception>;
+  static auto convert_from_bitwarden(std::string_view username, const fs::path& json_path) -> std::expected<Vault, Exception>;
 
   [[nodiscard]]
-  auto list_entries() const ->  const std::vector<PasswordEntry>&;
-
+  auto list_entries() const ->  const std::vector<PasswordEntry>& { return entries_; }
   void modify_entry(std::size_t index, protocol::MagicIdentifer identifier, const SecureBuffer& new_data);
-  
+  void add_entry(const PasswordEntry&);
+
+  void encrypt_to_file(const SecureBuffer& password);
+
 private:
+  Vault(std::string_view username) : username_{username} { generate_dir_if_not_exists(); }
 
-  FileManager file_manager_{};
-  std::vector<PasswordEntry> entries_{};
+  std::vector<PasswordEntry> entries_;
+  FileHeaders file_headers_{};
+  std::string username_;
+  FileManager file_manager_;
 
+  void generate_dir_if_not_exists();
 };
 
 
-
-
-// things to do
-// generate the highlevel directory if it doesnt exit
-// try and open a file, then decrypt
-// try and convert a file
-// list entries
-// have a high level modifier to said entires
-// try and encrypt back a file
-
-
-// get headers from path
