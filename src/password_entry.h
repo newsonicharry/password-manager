@@ -10,7 +10,7 @@
 #include "constants.h"
 #include "secure_buffer.h"
 
-using MagicIdentifier = protocol::MagicIdentifer;
+using MagicIdentifier = protocol::MagicIdentifier;
 
 struct Slices
 {

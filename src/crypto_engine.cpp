@@ -51,7 +51,7 @@ struct DecryptionDataRefView
 
 auto decrypt_from_file_or_throw(const fs::path& file_path, const DecryptionDataRefView& decryption_data) -> SecureBuffer
 {
-  std::ifstream file{file_path};
+  std::ifstream file{file_path, std::ios::binary};
   
   // start at the encrypted data
   file.seekg(protocol::TOTAL_HEADER_BYTES, std::ios::beg);
@@ -112,7 +112,7 @@ auto crypto_engine::hash_key(const SecureBuffer& password, std::span<const std::
   if (0 != crypto_pwhash(std::bit_cast<unsigned char*>(hashed_key.get_write_ptr()), hashed_key.size(),
                 std::bit_cast<char*>(password.get_read_ptr()), password.size(),
                 std::bit_cast<unsigned char*>(salt.data()),
-                crypto_pwhash_OPSLIMIT_INTERACTIVE, crypto_pwhash_MEMLIMIT_INTERACTIVE, crypto_pwhash_ALG_DEFAULT))
+                crypto_pwhash_OPSLIMIT_MODERATE, crypto_pwhash_MEMLIMIT_MODERATE, crypto_pwhash_ALG_DEFAULT))
   {
     throw Exception("Failed to hash password. Do you have enough memory?\n", Exception::ExceptionType::HashingError);
   }
@@ -148,11 +148,14 @@ auto crypto_engine::encrypt_file(const fs::path& file_path, const SecureBuffer& 
   
   unsigned long long cipher_text_len{ciphertext.size()};
 
-  crypto_aead_aegis256_encrypt(ciphertext.data(), &cipher_text_len,
+  if(0 != crypto_aead_aegis256_encrypt(ciphertext.data(), &cipher_text_len,
                              std::bit_cast<unsigned char*>(message.get_read_ptr()), message.size(),
                              std::bit_cast<unsigned char*>(additional_data.data()), additional_data.size(),
                              nullptr, std::bit_cast<unsigned char*>(file_headers.nonce.data()),
-                             std::bit_cast<unsigned char*>(key.get_read_ptr()));
+                             std::bit_cast<unsigned char*>(key.get_read_ptr())))
+  {
+    throw Exception("Failed to encrypt file.\n", Exception::ExceptionType::EncryptionError);
+  }
 
 
   // the final data we are writing to file

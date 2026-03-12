@@ -134,7 +134,7 @@ void PasswordEntry::modify(MagicIdentifier identifier, const SecureBuffer& new_i
 
    
   std::copy(new_identifier_data.begin(), new_identifier_data.end(), write_ptr);
-  // std::copy(new_identifier_data.get_read_ptr(), new_identifier_data.get_read_ptr()+new_identifier_data.size(), write_ptr);
+
   write_ptr += new_identifier_data.size();
   
   const std::size_t written_elements{num_start_elements + new_identifier_data.size()};

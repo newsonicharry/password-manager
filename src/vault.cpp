@@ -47,6 +47,12 @@ auto Vault::open_existing(std::string_view username, const SecureBuffer& passwor
     FileHeaders file_headers{vault_serializer::get_headers_from_path(user_path)};
     SecureBuffer data{crypto_engine::decrypt_file(user_path, file_headers, password)};
     vault.entries_ = vault_serializer::parse_user_vault(data);
+
+    if (file_headers.entry_count != vault.entries_.size())
+    {
+      return std::unexpected(Exception("File header entry count and real entry count are not equal.\n", Exception::ExceptionType::VaultError));
+    }
+
     vault.file_headers_ = file_headers;
 
   }
@@ -96,7 +102,7 @@ void Vault::generate_dir_if_not_exists()
 }
 
 
-void Vault::modify_entry(std::size_t index, protocol::MagicIdentifer identifier, const SecureBuffer& new_data)
+void Vault::modify_entry(std::size_t index, protocol::MagicIdentifier identifier, const SecureBuffer& new_data)
 {  
   assert(index < entries_.size() && "Index cannot be greater then the size of entires");
   assert(identifier != MagicIdentifier::Initial && identifier != MagicIdentifier::Size && "Identifier must be a valid identifier");

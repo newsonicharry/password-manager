@@ -8,6 +8,7 @@
 #include "constants.h"
 #include "converter.h"
 #include "exception.h"
+#include "password_entry.h"
 #include "secure_buffer.h"
 #include "utils.h"
 
@@ -17,7 +18,7 @@ using json = nlohmann::json;
 namespace
 {
 
-using MagicIdentifer = protocol::MagicIdentifer;
+using MagicIdentifer = protocol::MagicIdentifier;
 
 
 auto iso8601_to_unix(const std::string& iso8601) -> std::time_t
@@ -129,7 +130,7 @@ void json_parser(const json& passwords, std::vector<std::byte>& buffer)
 
     buffer.push_back(static_cast<std::byte>(MagicIdentifer::Initial));
     
-    append_if_not_null("name", MagicIdentifer::Site, item, buffer);      
+    append_if_not_null("name", MagicIdentifier::Site, item, buffer);      
     append_if_not_null("notes", MagicIdentifer::Note, item, buffer);
 
     append_if_not_null("creationDate", MagicIdentifer::DateCreated, item, buffer);

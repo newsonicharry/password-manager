@@ -26,7 +26,7 @@ public:
   void resize_to_capacity() {buffer_.resize(buffer_.capacity());}
   
   [[nodiscard]]
-  auto size() const -> unsigned long long { return buffer_.capacity(); }
+  auto size() const -> unsigned long long { return buffer_.size(); }
 
   [[nodiscard]]
   auto get_write_ptr() -> std::byte*;

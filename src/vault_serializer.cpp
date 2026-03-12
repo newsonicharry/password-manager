@@ -14,9 +14,8 @@
 #include <bitset>
 #include <iostream>
 #include <fstream>
-#include <algorithm>
 
-using MagicIdentifier = protocol::MagicIdentifer;
+using MagicIdentifier = protocol::MagicIdentifier;
 
 
 
@@ -140,14 +139,12 @@ auto vault_serializer::parse_user_vault(const SecureBuffer& vault_data) -> std::
 {
   std::vector<PasswordEntry> entries{};
 
-  int num_found_entries{0};
   std::size_t index{0};
   // loops while we still have data left
   while (index < vault_data.size())
   {
     // parse entry updates the index for the next entr
     entries.push_back(parse_entry(index, vault_data));
-    num_found_entries++;
   }
 
   return entries;
@@ -220,7 +217,7 @@ auto vault_serializer::convert_entries_to_buffer(const std::vector<PasswordEntry
     const SecureBuffer& raw_entry_data{entry.get_raw_data()};
 
     // mark each entry starting with an inital identifer
-    insert_into_ptr(write_pointer, static_cast<uint8_t>(protocol::MagicIdentifer::Initial));
+    insert_into_ptr(write_pointer, static_cast<uint8_t>(MagicIdentifier::Initial));
     for (std::size_t identifier{protocol::start_identifier}; identifier < protocol::end_identifier; identifier++)
     {
       std::span<const std::byte> raw_identifier_data{entry.get(static_cast<MagicIdentifier>(identifier))};

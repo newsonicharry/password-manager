@@ -1,5 +1,6 @@
 #pragma once
 
+#include "constants.h"
 #include "exception.h"
 #include "file_manager.h"
 #include "password_entry.h"
@@ -19,7 +20,7 @@ public:
 
   [[nodiscard]]
   auto list_entries() const ->  const std::vector<PasswordEntry>& { return entries_; }
-  void modify_entry(std::size_t index, protocol::MagicIdentifer identifier, const SecureBuffer& new_data);
+  void modify_entry(std::size_t index, protocol::MagicIdentifier identifier, const SecureBuffer& new_data);
   void add_entry(const PasswordEntry&);
 
   void encrypt_to_file(const SecureBuffer& password);

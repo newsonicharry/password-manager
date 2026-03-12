@@ -26,7 +26,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(json)
 
 
-# add_subdirectory(dependencies/FTXUI)
+add_subdirectory(dependencies/FTXUI)
 # add_subdirectory(dependencies/json)
 
 #make sure be got pkgconfig
@@ -36,6 +36,7 @@ pkg_check_modules(SODIUM REQUIRED libsodium)
 
 
 add_executable(password_manager
+# core
     src/main.cpp
 
     src/secure_buffer.h
@@ -61,7 +62,20 @@ add_executable(password_manager
 
     src/vault.h
     src/vault.cpp
+
+# ui
+    src/ui/app.h
+    src/ui/app.cpp
+
+    src/ui/theme.h
+
+    src/ui/screens/start_screen.h
+    src/ui/screens/start_screen.cpp
+
+    src/ui/screens/login_screen.h
+    src/ui/screens/login_screen.cpp
 )
+
 target_compile_features(password_manager PRIVATE cxx_std_23)
 
 # use those prefixed SODIUM Varibale
@@ -74,9 +88,9 @@ target_include_directories(password_manager
 target_link_libraries(password_manager
     PRIVATE
         -fsanitize=address
-        # ftxui::screen
-        # ftxui::dom
-        # ftxui::component
+        ftxui::screen
+        ftxui::dom
+        ftxui::component
         ${SODIUM_LIBRARIES}
         nlohmann_json::nlohmann_json
         GTest::gtest_main

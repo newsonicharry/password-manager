@@ -41,7 +41,7 @@ namespace protocol
 
   inline constexpr uint8_t DEFAULT_ITERATIONS{1};  
 
-  enum class MagicIdentifer : std::uint8_t
+  enum class MagicIdentifier : std::uint8_t
   {
     Initial = 0,
 
@@ -55,8 +55,8 @@ namespace protocol
     Size = 7,
   };
 
-  constexpr std::size_t start_identifier{static_cast<std::size_t>(MagicIdentifer::Initial)+1};
-  constexpr std::size_t end_identifier{static_cast<std::size_t>(MagicIdentifer::Size)};
+  constexpr std::size_t start_identifier{static_cast<std::size_t>(MagicIdentifier::Initial)+1};
+  constexpr std::size_t end_identifier{static_cast<std::size_t>(MagicIdentifier::Size)};
 
   
 }

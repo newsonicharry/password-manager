@@ -94,7 +94,7 @@ void FileManager::write_user_data(std::string_view username, const std::vector<s
 
   if (is_rewriting_file) { fs::rename(user_path, temp_user_path); }
 
-  std::ofstream file{user_path};
+  std::ofstream file{user_path, std::ios::binary};
 
   if (!file.is_open())
   {
@@ -103,9 +103,18 @@ void FileManager::write_user_data(std::string_view username, const std::vector<s
   }
 
   file.write(std::bit_cast<char*>(encrypted_data.data()), static_cast<std::streamsize>(encrypted_data.size()));
+
+  if (!file.good())
+  {
+    fs::rename(temp_user_path, user_path);
+    throw Exception("Failed to write to user passwords file.\n", Exception::ExceptionType::FileError);         
+  }
+
+  
   file.close();
 
   if (is_rewriting_file){ fs::remove(temp_user_path); }
+
 }
 
 

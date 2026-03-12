@@ -9,7 +9,7 @@
 
 SecureBuffer::SecureBuffer(std::size_t length)
 {
-  buffer_.reserve(length);
+  buffer_.resize(length);
   
   sodium_mlock(buffer_.data(), length);
 }
@@ -17,11 +17,12 @@ SecureBuffer::SecureBuffer(std::size_t length)
 
 SecureBuffer::~SecureBuffer() noexcept
 {
-  if (buffer_.size() == 0)
+  if (buffer_.capacity() == 0)
   {
     return;
   }
 
+  sodium_munlock(buffer_.data(), buffer_.capacity());
   sodium_memzero(buffer_.data(), buffer_.capacity());
 }
 
