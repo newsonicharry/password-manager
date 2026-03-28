@@ -75,9 +75,14 @@ add_executable(password_manager
     src/ui/screens/login_screen.h
     src/ui/screens/login_screen.cpp
 
+    src/ui/screens/setup_screen.h
+    src/ui/screens/setup_screen.cpp
+    
     src/ui/components/components.h
     src/ui/components/components.cpp
 
+    src/ui/components/container.h
+    src/ui/components/container.cpp
 )
 
 target_compile_features(password_manager PRIVATE cxx_std_23)

@@ -3,7 +3,11 @@
 #include <cstddef>
 #include <ftxui/component/app.hpp>
 #include <ftxui/component/event.hpp>
+#include <ftxui/dom/node.hpp>
+#include <ftxui/screen/color.hpp>
 #include <string>
+#include <type_traits>
+#include <vector>
 
 namespace ui::components
 {
@@ -27,7 +31,7 @@ namespace ui::components
   };
 
   template <typename... Args>
-  // requires (std::same_as<Args, Filter> && ...)
+  requires (std::same_as<std::decay_t<Args>, Filter> && ...)
   auto filter_combiner(Args&&... args) -> Filter {
     return [=](const ftxui::Event& event){
       return (... || args(event));
@@ -39,4 +43,6 @@ namespace ui::components
 
   auto create_button(std::string_view button_label, const std::function<void()>& caller, int button_width = 0) -> ftxui::Component;
 
+  
+  auto create_strength_bar(std::size_t category_index, const std::vector<ftxui::Color>& color_by_index) -> ftxui::Element;
 }

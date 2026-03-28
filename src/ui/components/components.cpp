@@ -1,9 +1,13 @@
 #include "components.h"
 #include "../theme.h"
+#include <cassert>
 #include <cstddef>
+#include <ftxui/component/app.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/component/component.hpp>
+#include <ftxui/screen/color.hpp>
 #include <functional>
+#include <vector>
 
 using namespace ftxui;
 namespace theme = ui::theme;
@@ -53,4 +57,23 @@ auto ui::components::create_button(std::string_view button_label, const std::fun
   
 }
 
+auto ui::components::create_strength_bar(std::size_t category_index, const std::vector<ftxui::Color>& color_by_index) -> Element
+{
+  assert(category_index < color_by_index.size() && "Invalid index given; out of bounds");
+  
+  std::vector<Element> gauge_container{separatorEmpty()};
+  for (std::size_t i{}; i < color_by_index.size(); i++)
+  {
+    Color bar_color{i <= category_index ? color_by_index[category_index] : Color::GrayLight};
+    
+    // we use a seperator character because a horizontal seperator next to a horizontal sepeartor is not possible
+    // since it will use a vertical seperator if it sees that
+    gauge_container.push_back(
+      separatorCharacter("─") | color(bar_color) | bold | xflex_grow
+    );
+    gauge_container.push_back(separatorEmpty());
+  }
 
+  return hbox(gauge_container) | borderLight;
+  
+}
