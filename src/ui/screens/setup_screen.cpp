@@ -95,16 +95,16 @@ auto render_body(std::string* username, std::string* password, std::string* json
 auto ui::screens::render_setup_screen(std::string* username, std::string* password, std::string* json_path, std::string* confirmed_password) -> Component
 {
   
-  Component header = components::render_header("VAULT SETUP");
-  Component footer = components::render_footer("INITALIZE", theme::FONT_COLOR);
+  Component header{ components::render_header("VAULT SETUP") };
+  Component footer{ components::render_footer("INITALIZE", theme::FONT_COLOR) };
 
-  Component body = render_body(username, password, json_path, confirmed_password);
+  Component body{ render_body(username, password, json_path, confirmed_password) };
   
-  Component layout = Container::Vertical({
+  Component layout { Container::Vertical({
     header,
     body,
     footer
-  });
+  })};
   
   return Renderer(layout, [=]{
      return vbox({

@@ -7,10 +7,11 @@ namespace ui::screens
 {
 
   enum class MessageType{
-    Info,
+    Info = 0,
     Success,
     Warning,
     Error,
+    Size,
   };
   auto render_message_screen(std::string_view message, MessageType message_type, std::string_view title) -> ftxui::Component;
 

@@ -39,7 +39,8 @@ auto ui::components::create_button(std::string_view button_label, const std::fun
     }
     else
     {
-      element |=  color(theme::FONT_COLOR) | borderLight | color(theme::BORDER_COLOR);
+      element |= borderLight | color(theme::BORDER_COLOR);
+      // element |=  color(theme::FONT_COLOR) | borderLight | color(theme::BORDER_COLOR);
     }
 
     if (button_width != 0)

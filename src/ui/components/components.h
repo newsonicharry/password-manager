@@ -42,7 +42,6 @@ namespace ui::components
   auto create_input_field(std::string* input_field, std::string_view default_text, Filter input_rules = no_input_filter, bool is_password = false) -> ftxui::Component;
 
   auto create_button(std::string_view button_label, const std::function<void()>& caller, int button_width = 0) -> ftxui::Component;
-
-  
+ 
   auto create_strength_bar(std::size_t category_index, const std::vector<ftxui::Color>& color_by_index) -> ftxui::Element;
 }
