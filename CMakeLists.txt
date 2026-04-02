@@ -80,12 +80,19 @@ add_executable(password_manager
 
     src/ui/screens/message_screen.h
     src/ui/screens/message_screen.cpp
-    
+
+    src/ui/screens/vault_screen.h
+    src/ui/screens/vault_screen.cpp
+   
     src/ui/components/components.h
     src/ui/components/components.cpp
 
     src/ui/components/container.h
     src/ui/components/container.cpp
+
+    src/ui/app_state.h
+    src/ui/app_state.cpp
+
 )
 
 target_compile_features(password_manager PRIVATE cxx_std_23)

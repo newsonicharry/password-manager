@@ -64,24 +64,15 @@ Internal Design (WIP, may change):
 	Struct PasswordEntry{};
 	Sturct EntryMetadata{};
 
-	Class VaultService{};
-	-Handles the creation and opening of a vault
-
 	Class SessionManager{};
 	-Handles inactivity
 
-	Class CryptoEngine{};
+	namespace crypto_engine{};
 	-Encrypts, decryptes and handles the MAC
-
-	Class BitwardedImporter{};
-	-Open the Bitwarden json
 	
-	Class SecureString{};
+	Class SecureBuffer{};
 	-All passwords and other important data is held in here and gets zeroed-out
 
-	Class VaultView{};
-	-What FTXUI actually interacts with
-	
 File design:
 	Headers:
 		-Header name: 8 bytes,
