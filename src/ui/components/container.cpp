@@ -45,7 +45,15 @@ auto ui::components::render_footer(std::string_view status_type, Color status_co
           text("[TAB] ") | color(theme::FONT_COLOR) | bold,
           text("NEXT FIELD") | color(theme::FONT_COLOR),
           separatorEmpty(),
+          separator(),           
         }) | align_right,
+        hbox({
+          separatorEmpty(),
+          text("[↑ + TAB] ") | color(theme::FONT_COLOR) | bold,
+          text("PREVIOUS FIELD") | color(theme::FONT_COLOR),
+          separatorEmpty(),
+        }) | align_right,
+
 
       }) | xflex_grow,
 

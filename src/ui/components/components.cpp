@@ -27,20 +27,22 @@ auto ui::components::create_input_field(std::string* input_field, std::string_vi
 } 
 
 
-auto ui::components::create_button(std::string_view button_label, const std::function<void()>& caller, int button_width) -> Component
+auto ui::components::create_button(std::string_view button_label, const std::function<void()>& caller, int button_width, bool is_bright) -> Component
 {
+  const Color button_color{ is_bright ? theme::FONT_COLOR : theme::BORDER_COLOR};
+  
   ButtonOption button_option;
   button_option.transform = [=](const EntryState& state){
     auto element = text(state.label) | center;
 
     if (state.focused)
     {
-      element |=  borderLight | color(theme::BORDER_COLOR) | bold | inverted;
+      element |=  borderLight | color(button_color) | bold | inverted;
     }
     else
     {
-      element |= borderLight | color(theme::BORDER_COLOR);
-      // element |=  color(theme::FONT_COLOR) | borderLight | color(theme::BORDER_COLOR);
+      // element |= borderLight | color(button_color);
+      element |=  color(button_color) | borderLight | color(theme::BORDER_COLOR);
     }
 
     if (button_width != 0)

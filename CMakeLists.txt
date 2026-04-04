@@ -69,20 +69,13 @@ add_executable(password_manager
 
     src/ui/theme.h
 
-    src/ui/screens/start_screen.h
+    src/ui/screens/screens.h
     src/ui/screens/start_screen.cpp
-
-    src/ui/screens/login_screen.h
     src/ui/screens/login_screen.cpp
-
-    src/ui/screens/setup_screen.h
     src/ui/screens/setup_screen.cpp
-
-    src/ui/screens/message_screen.h
     src/ui/screens/message_screen.cpp
-
-    src/ui/screens/vault_screen.h
     src/ui/screens/vault_screen.cpp
+    src/ui/screens/entry_screen.cpp
    
     src/ui/components/components.h
     src/ui/components/components.cpp

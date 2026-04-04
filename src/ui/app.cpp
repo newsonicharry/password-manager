@@ -5,11 +5,7 @@
 #include <utility>
 #include "app.h"
 #include "app_state.h"
-#include "screens/start_screen.h"
-#include "screens/login_screen.h"
-#include "screens/setup_screen.h"
-#include "screens/message_screen.h"
-#include "screens/vault_screen.h"
+#include "screens/screens.h"
 
 using namespace ftxui;
 
@@ -54,13 +50,9 @@ void ui::vault_renderer()
   // screen.Loop(screens::render_login_screen(username.get(), password.get()));
 
 
+  // screen.Loop(screens::render_vault_screen(my_vault, app_state));  
+  screen.Loop(screens::render_entry_screen(app_state));  
 
-  // for (const auto& entry : my_vault.list_entries())
-  // {
-  //   std::cout << entry.get_password() << '\n';
-  // }
-
-  screen.Loop(screens::render_vault_screen(my_vault, app_state));  
 }
 
 

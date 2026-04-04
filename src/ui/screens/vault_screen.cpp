@@ -1,4 +1,4 @@
-#include "vault_screen.h"
+#include "screens.h"
 #include "../theme.h"
 #include "../components/container.h"
 #include "../app_state.h"
@@ -13,7 +13,6 @@
 #include <ftxui/screen/terminal.hpp>
 #include <functional>
 #include <string_view>
-#include <vector>
 
 // chatgpt was kind enough to design what it might look like
 // https://chatgpt.com/c/69c999c0-d9f8-832d-82f1-f46d88355a66
@@ -150,9 +149,9 @@ auto render_body(const Vault& vault, state::AppState& app_state) -> Component
         vbox({
           text("ENTRY DETAILS") | hcenter | bold | color(theme::FONT_COLOR), 
           separator(),
-          site_details->OnRender(),
+          site_details->Render(),
           separatorEmpty() | yflex_grow,
-          entry_footer -> OnRender()
+          entry_footer -> Render()
         }) | xflex_grow,
       }) | flex_grow,
 

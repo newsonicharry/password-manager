@@ -3,7 +3,7 @@
 #include <ftxui/component/component_base.hpp>
 #include <ftxui/screen/screen.hpp>
 #include "../theme.h"
-#include "start_screen.h"
+#include "screens.h"
 
 using namespace ftxui;
 namespace theme = ui::theme;

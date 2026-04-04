@@ -16,6 +16,22 @@ namespace ui::state
     void populate(Vault& vault);
   };
 
+  struct EditState
+  {
+    std::string site;
+    std::string username;
+    std::string email;
+    std::string password;
+    std::string notes;  
+
+    // password generator
+    std::string password_length { "16" }; // default password length is 16
+    bool include_uppercase{true};
+    bool include_lowercase{true};
+    bool include_numbers  {true};
+    bool include_symbols  {true};
+  };
+
   enum class SelectedScreen
   {
     Start,
@@ -31,6 +47,7 @@ namespace ui::state
     SelectedScreen selected_screen{SelectedScreen::Start};
 
     MainVaultState main_vault{};
+    EditState editor{};
   };
   
 }
