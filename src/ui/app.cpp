@@ -1,3 +1,4 @@
+#include <bitset>
 #include <ftxui/component/screen_interactive.hpp>
 #include <memory>
 #include <string>
@@ -6,6 +7,7 @@
 #include "app.h"
 #include "app_state.h"
 #include "screens/screens.h"
+#include "password_utils.h"
 
 using namespace ftxui;
 
@@ -34,6 +36,11 @@ auto open_existing_vault(std::string_view username, std::string_view password_st
 
 void ui::vault_renderer()
 {
+  password_utils::generate_random_password(12, std::bitset<4>{"1111"});
+
+  
+  // while (true);
+
   state::AppState app_state{};
   Vault my_vault{open_existing_vault(USERNAME, PASSWORD_STRING)}; 
 
@@ -49,8 +56,7 @@ void ui::vault_renderer()
   // screen.Loop(screens::render_message_screen("Hello, i am a very important message.", screens::MessageType::Warning, "Important Message Name"));
   // screen.Loop(screens::render_login_screen(username.get(), password.get()));
 
-
-  // screen.Loop(screens::render_vault_screen(my_vault, app_state));  
+  // screen.Loop(screens::render_vault_screen(my_vault, app_state));
   screen.Loop(screens::render_entry_screen(app_state));  
 
 }

@@ -86,6 +86,8 @@ add_executable(password_manager
     src/ui/app_state.h
     src/ui/app_state.cpp
 
+    src/ui/password_utils.h
+    src/ui/password_utils.cpp
 )
 
 target_compile_features(password_manager PRIVATE cxx_std_23)

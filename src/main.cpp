@@ -1,10 +1,12 @@
 #include "constants.h"
+#include "exception.h"
 #include "file_manager.h"
 #include "secure_buffer.h"
 #include "vault.h"
 #include "ui/app.h"
 #include <filesystem>
 #include <iostream>
+#include <sodium/core.h>
 #include <string_view>
 
 constexpr std::string_view PASSWORD_STRING{"pigeonsarecool123"};
@@ -34,6 +36,12 @@ void create_new_vault(std::string_view username)
 
 auto main() -> int
 {
+  if (sodium_init() < 0)
+  {
+    std::cout << "Failed to initalize libsodium.\n";
+    return 1;
+  }
+  
   FileManager file_manager;
   file_manager.delete_user("harry");
   create_new_vault_from_bitwarden("harry", PASSWORD_STRING);  
