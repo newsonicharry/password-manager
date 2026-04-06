@@ -3,6 +3,7 @@
 #include "../components/components.h"
 #include "../components/container.h"
 #include "ui_constants.h"
+#include <bit>
 #include <ftxui/component/app.hpp>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/component_base.hpp>
@@ -21,6 +22,7 @@ using namespace ftxui;
 
 namespace theme = ui::theme;
 namespace constants = ui::screens::constants;
+namespace state = ui::state;
 
 constexpr std::array<std::string_view, 3> TITLE_TEXT{
     "██  ██ ███  ██ ██     ▄████▄ ▄█████ ██ ▄█▀   ██  ██ ▄████▄ ██  ██ ██    ██████",
@@ -33,7 +35,7 @@ namespace {
 
 
 // TODO: replace this with a secure buffer
-auto render_body(std::string* username, std::string* password) -> Component
+auto render_body(state::AppState& app_state, std::string* username, std::string* password) -> Component
 {
   using namespace ui::components;  
 
@@ -43,8 +45,8 @@ auto render_body(std::string* username, std::string* password) -> Component
   Component input_username{create_input_field(username, "Enter your username...", username_filter)};
   Component input_password{create_input_field(password, "Enter your master password...", password_filter, IS_PASSWORD_INPUT)};
 
-  Component login_button{create_button("LOGIN", []{ std::cout << "Pressed"; }, constants::MAX_BUTTON_WIDTH)};
-  Component setup_button{create_button("SETUP", []{ std::cout << "Pressed"; }, constants::MAX_BUTTON_WIDTH)};
+  Component login_button{create_button("LOGIN", [&]{app_state.selected_screen = state::SelectedScreen::Login;}, constants::MAX_BUTTON_WIDTH, BRIGHT_BUTTON_COLOR)};
+  Component setup_button{create_button("SETUP", [&]{app_state.selected_screen = state::SelectedScreen::Setup;}, constants::MAX_BUTTON_WIDTH, BRIGHT_BUTTON_COLOR)};
 
   auto components = Container::Vertical({
     input_username,
@@ -99,12 +101,12 @@ auto render_body(std::string* username, std::string* password) -> Component
 } // unnammed namespace
 
 
-auto ui::screens::render_login_screen(std::string* username, std::string* password) -> Component
+auto ui::screens::render_login_screen(state::AppState& app_state) -> Component
 {
   
   Component header = components::render_header("UNLOCK VAULT");
   Component footer = components::render_footer("LOCKED", theme::WARNING_FONT_COLOR);
-  Component body = render_body(username, password);
+  Component body = render_body(app_state, &app_state.login.username, std::bit_cast<std::string*>(app_state.login.password.get_write_ptr()));
   
   Component layout = Container::Vertical({
     header,
@@ -117,7 +119,7 @@ auto ui::screens::render_login_screen(std::string* username, std::string* passwo
        header->Render(),
        body->Render(),
        footer->Render()                  
-     }) | borderLight | color(theme::BORDER_COLOR) | bgcolor(theme::BODY_BG_COLOR);;
+     }) | borderLight | color(theme::BORDER_COLOR) | bgcolor(theme::BODY_BG_COLOR);
   });
 }
 

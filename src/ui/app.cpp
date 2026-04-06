@@ -1,5 +1,8 @@
 #include <bitset>
+#include <ftxui/component/component_base.hpp>
 #include <ftxui/component/screen_interactive.hpp>
+#include <ftxui/component/component.hpp>
+
 #include <memory>
 #include <string>
 #include <iostream>
@@ -33,31 +36,38 @@ auto open_existing_vault(std::string_view username, std::string_view password_st
 
 
 
-
 void ui::vault_renderer()
 {
-  password_utils::generate_random_password(12, std::bitset<4>{"1111"});
-
-  
-  // while (true);
-
   state::AppState app_state{};
-  Vault my_vault{open_existing_vault(USERNAME, PASSWORD_STRING)}; 
-
-  app_state.main_vault.populate(my_vault);
-
-  auto username = std::make_shared<std::string>();
-  auto password = std::make_shared<std::string>();
-  auto json_path = std::make_shared<std::string>();
-  auto confirmed_password = std::make_shared<std::string>();
+  // Vault my_vault{open_existing_vault(USERNAME, PASSWORD_STRING)}; 
+  // app_state.main_vault.populate(my_vault);
 
   ScreenInteractive screen = ScreenInteractive::Fullscreen();
-  // screen.Loop(screens::render_setup_screen(username.get(), password.get(), json_path.get(), confirmed_password.get()));
-  // screen.Loop(screens::render_message_screen("Hello, i am a very important message.", screens::MessageType::Warning, "Important Message Name"));
-  // screen.Loop(screens::render_login_screen(username.get(), password.get()));
 
-  // screen.Loop(screens::render_vault_screen(my_vault, app_state));
-  screen.Loop(screens::render_entry_screen(app_state));  
+  Component start_screen{ screens::render_start_screen(app_state) };
+  Component login_screen{ screens::render_login_screen(app_state) };
+  // Component login_screen{ screens::render_setup_screen(app_state) };
+
+  auto all_screens{ Container::Vertical({
+    start_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Start; }),
+    login_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Login; })
+  })};
+
+  
+  auto root{ Renderer(all_screens, [=, &app_state]{
+      switch (app_state.selected_screen){
+      case state::SelectedScreen::Login:
+        return login_screen -> Render();
+      case state::SelectedScreen::Setup:
+        break;
+      default:
+        return start_screen -> Render(); 
+      }
+
+    }
+  )};
+
+  screen.Loop(root);  
 
 }
 

@@ -4,9 +4,28 @@
 #include <string_view>
 #include <vector>
 #include "../vault.h"
+#include "screens/ui_constants.h"
 
 namespace ui::state
 {
+  struct LoginState
+  {
+    std::string username;
+    SecureBuffer password{screens::constants::MAX_INPUT_CHARACTERS};
+    // std::string password;
+
+  };
+
+  struct SetupState
+  {
+    std::string username;
+    std::string bitwarden_path;
+
+    // SecureBuffer password{screens::constants::MAX_INPUT_CHARACTERS};
+    // SecureBuffer confirmed_password{screens::constants::MAX_INPUT_CHARACTERS};
+  };
+
+
   struct MainVaultState
   {
     int entry_selected{};
@@ -46,8 +65,11 @@ namespace ui::state
   {
     SelectedScreen selected_screen{SelectedScreen::Start};
 
+    
     MainVaultState main_vault{};
     EditState editor{};
+    LoginState login{};
+    SetupState setup{};
   };
   
 }
