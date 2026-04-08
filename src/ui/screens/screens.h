@@ -8,7 +8,7 @@
 namespace ui::screens
 {
   auto render_login_screen(state::AppState& app_state) -> ftxui::Component;
-  auto render_setup_screen(std::string* username, std::string* password, std::string* json_path, std::string* confirmed_password) -> ftxui::Component;
+  auto render_setup_screen(state::AppState& app_state) -> ftxui::Component;
   auto render_start_screen(state::AppState& app_state) -> ftxui::Component;
   auto render_vault_screen(const Vault& vault, ui::state::AppState& app_state) -> ftxui::Component;
   auto render_entry_screen(state::AppState& app_state) -> ftxui::Component;

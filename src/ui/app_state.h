@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sodium/utils.h>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -11,18 +12,16 @@ namespace ui::state
   struct LoginState
   {
     std::string username;
-    SecureBuffer password{screens::constants::MAX_INPUT_CHARACTERS};
-    // std::string password;
-
+    std::string password;
   };
 
   struct SetupState
   {
     std::string username;
-    std::string bitwarden_path;
+    std::string json_path;
 
-    // SecureBuffer password{screens::constants::MAX_INPUT_CHARACTERS};
-    // SecureBuffer confirmed_password{screens::constants::MAX_INPUT_CHARACTERS};
+    std::string password;
+    std::string confirmed_password;
   };
 
 
@@ -53,6 +52,7 @@ namespace ui::state
 
   enum class SelectedScreen
   {
+    Quit,
     Start,
     Login,
     Setup,
@@ -70,6 +70,9 @@ namespace ui::state
     EditState editor{};
     LoginState login{};
     SetupState setup{};
+
+
+    void initalize();
+    void destroy();
   };
-  
 }

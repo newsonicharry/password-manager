@@ -35,24 +35,24 @@ namespace {
 
 
 // TODO: replace this with a secure buffer
-auto render_body(state::AppState& app_state, std::string* username, std::string* password) -> Component
+auto render_body(state::AppState& app_state) -> Component
 {
   using namespace ui::components;  
 
-  Filter username_filter{filter_combiner(newline_input_filter, char_limit_input_filter(username, constants::MAX_INPUT_CHARACTERS))};
-  Filter password_filter{filter_combiner(newline_input_filter, char_limit_input_filter(password, constants::MAX_INPUT_CHARACTERS))};
+  Filter username_filter{filter_combiner(newline_input_filter, char_limit_input_filter(&app_state.login.username, constants::MAX_INPUT_CHARACTERS))};
+  Filter password_filter{filter_combiner(newline_input_filter, char_limit_input_filter(&app_state.login.password, constants::MAX_INPUT_CHARACTERS))};
 
-  Component input_username{create_input_field(username, "Enter your username...", username_filter)};
-  Component input_password{create_input_field(password, "Enter your master password...", password_filter, IS_PASSWORD_INPUT)};
+  Component input_username{create_input_field(&app_state.login.username, "Enter your username...", username_filter)};
+  Component input_password{create_input_field(&app_state.login.password, "Enter your master password...", password_filter, IS_PASSWORD_INPUT)};
 
   Component login_button{create_button("LOGIN", [&]{app_state.selected_screen = state::SelectedScreen::Login;}, constants::MAX_BUTTON_WIDTH, BRIGHT_BUTTON_COLOR)};
-  Component setup_button{create_button("SETUP", [&]{app_state.selected_screen = state::SelectedScreen::Setup;}, constants::MAX_BUTTON_WIDTH, BRIGHT_BUTTON_COLOR)};
+  Component back_button{create_button("BACK TO START", [&]{app_state.selected_screen = state::SelectedScreen::Start;}, constants::MAX_BUTTON_WIDTH, BRIGHT_BUTTON_COLOR)};
 
   auto components = Container::Vertical({
     input_username,
     input_password,
     login_button,
-    setup_button                    
+    back_button                    
   });
   
   return Renderer(components, [=]{
@@ -87,7 +87,7 @@ auto render_body(state::AppState& app_state, std::string* username, std::string*
         vbox({         
           login_button->Render(),
           separatorEmpty(),
-          setup_button->Render(),
+          back_button->Render(),
         }) | center | flex,
 
         vbox({separatorEmpty()}) | flex,
@@ -106,7 +106,7 @@ auto ui::screens::render_login_screen(state::AppState& app_state) -> Component
   
   Component header = components::render_header("UNLOCK VAULT");
   Component footer = components::render_footer("LOCKED", theme::WARNING_FONT_COLOR);
-  Component body = render_body(app_state, &app_state.login.username, std::bit_cast<std::string*>(app_state.login.password.get_write_ptr()));
+  Component body = render_body(app_state);
   
   Component layout = Container::Vertical({
     header,

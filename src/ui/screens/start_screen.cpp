@@ -24,7 +24,7 @@ auto render_body(state::AppState& app_state) -> Component
   
   Component login_button{ create_button("LOGIN", [&]{app_state.selected_screen = state::SelectedScreen::Login;}, constants::MAX_BUTTON_WIDTH, BRIGHT_BUTTON_COLOR) };
   Component setup_button{ create_button("SETUP", [&]{app_state.selected_screen = state::SelectedScreen::Setup;}, constants::MAX_BUTTON_WIDTH, BRIGHT_BUTTON_COLOR) };
-  Component quit_button{ create_button("QUIT", [&]{app_state.selected_screen = state::SelectedScreen::Start;}, constants::MAX_BUTTON_WIDTH, BRIGHT_BUTTON_COLOR) };
+  Component quit_button{ create_button("QUIT", [&]{app_state.selected_screen = state::SelectedScreen::Quit;}, constants::MAX_BUTTON_WIDTH, BRIGHT_BUTTON_COLOR) };
 
   auto components{ Container::Vertical({
     login_button,

@@ -39,36 +39,39 @@ auto open_existing_vault(std::string_view username, std::string_view password_st
 void ui::vault_renderer()
 {
   state::AppState app_state{};
+  app_state.initalize();
   // Vault my_vault{open_existing_vault(USERNAME, PASSWORD_STRING)}; 
   // app_state.main_vault.populate(my_vault);
 
   ScreenInteractive screen = ScreenInteractive::Fullscreen();
-
+  // screen.Loop(screens::render_setup_screen(app_state));
   Component start_screen{ screens::render_start_screen(app_state) };
   Component login_screen{ screens::render_login_screen(app_state) };
-  // Component login_screen{ screens::render_setup_screen(app_state) };
+  Component setup_screen{ screens::render_setup_screen(app_state) };
 
   auto all_screens{ Container::Vertical({
     start_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Start; }),
-    login_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Login; })
+    login_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Login; }),
+    setup_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Setup; })
   })};
 
   
-  auto root{ Renderer(all_screens, [=, &app_state]{
+  auto root{ Renderer(all_screens, [=, &screen, &app_state]{
       switch (app_state.selected_screen){
+      case state::SelectedScreen::Quit:
+        screen.ExitLoopClosure()();
       case state::SelectedScreen::Login:
         return login_screen -> Render();
       case state::SelectedScreen::Setup:
-        break;
+        return setup_screen -> Render();
       default:
         return start_screen -> Render(); 
       }
-
     }
   )};
 
   screen.Loop(root);  
-
+  app_state.destroy();
 }
 
 
