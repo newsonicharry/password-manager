@@ -9,7 +9,7 @@
 #include <sodium/core.h>
 #include <string_view>
 
-constexpr std::string_view PASSWORD_STRING{"pigeonsarecool123"};
+constexpr std::string_view PASSWORD_STRING{"password"};
 
 
 void create_new_vault_from_bitwarden(std::string_view username, std::string_view password_string)

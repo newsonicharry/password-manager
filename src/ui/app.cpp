@@ -1,6 +1,7 @@
 #include <ftxui/component/component_base.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/component/component.hpp>
+#include <ftxui/screen/screen.hpp>
 #include <iostream>
 #include <string_view>
 #include <utility>
@@ -37,6 +38,7 @@ void ui::vault_renderer()
 {
   state::AppState app_state{};
   app_state.initalize();
+  // app_state.selected_screen = state::SelectedScreen::MainVault;
 
   // const std::string my_password = "harry is super cool";
   // password_utils::PasswordStrength strength = password_utils::classify_password_strength(my_password);
@@ -49,13 +51,15 @@ void ui::vault_renderer()
   Component login_screen{ screens::render_login_screen(app_state) };
   Component setup_screen{ screens::render_setup_screen(app_state) };
   Component message_screen{ screens::render_message_screen(app_state)};
+  Component vault_screen{ screens::render_vault_screen(app_state)};
 
 
   auto all_screens{ Container::Vertical({
     start_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Start; }),
     login_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Login; }),
     setup_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Setup; }),
-    message_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Message; })
+    message_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Message; }),
+    vault_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::MainVault; })
 
   })};
 
@@ -72,6 +76,9 @@ void ui::vault_renderer()
 
       case state::SelectedScreen::Setup:
         return setup_screen -> Render();
+
+      case state::SelectedScreen::MainVault:        
+        return vault_screen -> Render();
 
       case state::SelectedScreen::Message:        
         return message_screen -> Render();

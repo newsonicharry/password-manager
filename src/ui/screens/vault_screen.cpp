@@ -12,6 +12,7 @@
 #include <ftxui/screen/color.hpp>
 #include <ftxui/screen/terminal.hpp>
 #include <functional>
+#include <string>
 #include <string_view>
 
 // chatgpt was kind enough to design what it might look like
@@ -24,40 +25,78 @@ namespace state = ui::state;
 namespace {
 
 
+template <typename... Args>
+requires (std::same_as<std::decay_t<Args>, std::string> && ...)
+auto section_builder(std::string_view window_name, Args&&... args) -> Element{
 
-auto render_entry(state::AppState& app_state) -> Component
-{
   auto data_builder{ [](std::string_view display_text){
     return vbox({
       hbox({
+        separatorEmpty() | size(ftxui::WIDTH, ftxui::EQUAL, 4),
         text(display_text) | bold | color(theme::FONT_COLOR),
         text("PLACEHOLDER") | color(theme::FONT_COLOR)
       }),
-             
+         
     });
   }};
 
+  std::vector<Element> internal_container{separatorEmpty()};
+  (internal_container.push_back(data_builder(args)), ...);
+  internal_container.push_back(separatorEmpty());
+
+  return hbox({
+    separatorEmpty() | size(ftxui::WIDTH, ftxui::EQUAL, 4),
+
+    window(text(window_name),
+      vbox(internal_container),
+      BorderStyle::LIGHT
+    ) | xflex,
+
+    separatorEmpty() | size(ftxui::WIDTH, ftxui::EQUAL, 4),
+  }) | xflex;
+}
+
+
+
+auto render_entry(state::AppState& app_state) -> Component
+{
+  using namespace std::string_literals;
+
   return Renderer([=]{
     return vbox({
-      data_builder("Site:     "),
-      data_builder("Username: "),
-      data_builder("Email:    "),
+      separatorEmpty() | size(ftxui::HEIGHT, ftxui::EQUAL, 2),
 
-      separatorEmpty(),
+      section_builder(
+        "[ Account ]",
+        "Site        :    "s,
+        "Username    :    "s,
+        "Email       :    "s
+      ),
 
-      data_builder("Notes: "),
+      separatorEmpty() | size(ftxui::HEIGHT, ftxui::EQUAL, 2),
 
-      separatorEmpty(),
-      hbox({
-        text("Password: ") | bold | color(theme::FONT_COLOR),
-        text("***************") | color(theme::FONT_COLOR)    
-      }),
-      separatorEmpty(),
-      data_builder("Date Modified: "),
-      data_builder("Date Created:  "),
+      section_builder(
+        "[ Notes ]",
+        "Notes       :    "s
+      ),
+
+      separatorEmpty() | size(ftxui::HEIGHT, ftxui::EQUAL, 2),
+
+      section_builder(
+        "[ Security ]",
+        "Password    :    "s
+      ),
+
+      separatorEmpty() | size(ftxui::HEIGHT, ftxui::EQUAL, 2),
+
+
+      section_builder(
+        "[ Metadata ]",
+        "Created    :    "s,
+        "Modified   :    "s
+      ),
     });
   });
-    
 }
 
 
@@ -122,7 +161,7 @@ auto render_main_footer() -> Component
   });
 }
 
-auto render_body(const Vault& vault, state::AppState& app_state) -> Component
+auto render_body(state::AppState& app_state) -> Component
 {
   using namespace ui::components;  
   // Component setup_button{create_button("CREATE VAULT", []{ std::cout << "Pressed"; }, MAX_BUTTON_WIDTH)};
@@ -163,13 +202,11 @@ auto render_body(const Vault& vault, state::AppState& app_state) -> Component
 } // unnammed namespace
 
 
-auto ui::screens::render_vault_screen(const Vault& vault, state::AppState& app_state) -> Component
+auto ui::screens::render_vault_screen(state::AppState& app_state) -> Component
 {
   
   Component footer{ render_main_footer() };
-
-  Component body{ render_body(vault, app_state) };
-  
+  Component body{ render_body(app_state) }; 
   Component layout { Container::Vertical({
     body,
     footer

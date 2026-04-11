@@ -12,6 +12,7 @@
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/color.hpp>
 #include <functional>
+#include <memory>
 #include <string_view>
 
 
@@ -34,7 +35,8 @@ namespace {
 auto try_login(state::AppState& app_state)
 {
 
-  auto vault{ Vault::create_new(app_state.setup.username) };
+  SecureBuffer password_buffer{app_state.login.password};
+  auto vault{ Vault::open_existing(app_state.login.username, password_buffer) };
 
   if (!vault)
   {
@@ -46,7 +48,11 @@ auto try_login(state::AppState& app_state)
     app_state.selected_screen = ui::state::SelectedScreen::Message;
     return;
   }
-  
+
+
+  app_state.main_vault.vault = std::make_shared<Vault>(std::move(vault.value()));
+  app_state.main_vault.populate(app_state.main_vault.vault.get());
+
   app_state.selected_screen = ui::state::SelectedScreen::MainVault;
 }
 

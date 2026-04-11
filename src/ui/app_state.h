@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <sodium/utils.h>
 #include <string>
 #include <string_view>
@@ -51,11 +52,12 @@ namespace ui::state
 
   struct MainVaultState
   {
+    std::shared_ptr<Vault> vault;
     int entry_selected{};
     std::vector<std::string_view> sites;
     const PasswordEntry* current_entry;
     
-    void populate(Vault& vault);
+    void populate(Vault* vault);
   };
 
   struct EditState

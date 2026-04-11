@@ -3,13 +3,14 @@
 #include <cassert>
 #include <cstddef>
 #include <vector>
-
+#include <string>
 
 
 class SecureBuffer{
 public:
   SecureBuffer() = default;
-  
+
+  SecureBuffer(const std::string& password);
   SecureBuffer(std::size_t length);
 
   ~SecureBuffer() noexcept;

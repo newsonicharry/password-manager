@@ -15,7 +15,6 @@
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/color.hpp>
 #include <functional>
-#include <iostream>
 #include <string>
 #include <string_view>
 
@@ -37,6 +36,7 @@ constexpr std::array<std::string_view, 3> TITLE_TEXT{
 
 namespace {
 
+// todo: combine this and the try_login into a central file
 auto try_setup(state::AppState& app_state)
 {
   
@@ -67,8 +67,10 @@ auto try_setup(state::AppState& app_state)
     return;
   }
   
-  app_state.selected_screen = ui::state::SelectedScreen::MainVault;
+  app_state.main_vault.vault = std::make_shared<Vault>(std::move(vault.value()));
+  app_state.main_vault.populate(app_state.main_vault.vault.get());
 
+  app_state.selected_screen = ui::state::SelectedScreen::MainVault;
 }
 
 

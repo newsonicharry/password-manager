@@ -1,18 +1,28 @@
 #include "secure_buffer.h"
+#include "utils.h"
+#include <bit>
 #include <cassert>
 #include <cstddef>
 #include <cstring>
 #include <sodium.h>
 #include <sodium/utils.h>
-#include <iostream>
+#include <string>
 
 
 SecureBuffer::SecureBuffer(std::size_t length)
 {
-  buffer_.resize(length);
-  
+  buffer_.resize(length);  
   sodium_mlock(buffer_.data(), length);
 }
+
+SecureBuffer::SecureBuffer(const std::string& password)
+{
+  buffer_.resize(password.length());
+  sodium_mlock(buffer_.data(), password.length());
+  
+  std::copy(std::bit_cast<std::byte*>(password.begin()), std::bit_cast<std::byte*>(password.end()), buffer_.data());
+}
+
 
 
 SecureBuffer::~SecureBuffer() noexcept
