@@ -80,6 +80,8 @@ add_executable(password_manager
     src/ui/components/components.h
     src/ui/components/components.cpp
 
+    src/ui/components/input_field_component.h
+
     src/ui/components/container.h
     src/ui/components/container.cpp
 

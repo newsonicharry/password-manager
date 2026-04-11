@@ -19,8 +19,7 @@ namespace ui::password_utils
   };
 
 
-  // TODO: change to a secure buffer later
-  auto classify_password_strength(std::string_view password) -> PasswordStrength;
+  auto classify_password_strength(const std::string& password) -> PasswordStrength;
 
   
   auto generate_random_password(std::size_t length, std::bitset<4> options) -> SecureBuffer; 

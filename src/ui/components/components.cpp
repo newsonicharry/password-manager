@@ -12,21 +12,6 @@
 using namespace ftxui;
 namespace theme = ui::theme;
 
-
-auto ui::components::create_input_field(std::string* input_field, std::string_view default_text, ui::components::Filter input_rules, bool is_password) -> ftxui::Component
-{
-  InputOption input_options;
-  input_options.password = is_password;
-
-  Component input = Input(input_field, default_text, input_options);
-
-  input |= borderLight;
-  input |= CatchEvent(input_rules);
-  
-  return input;
-} 
-
-
 auto ui::components::create_button(std::string_view button_label, const std::function<void()>& caller, int button_width, bool is_bright) -> Component
 {
   const Color button_color{ is_bright ? theme::FONT_COLOR : theme::BORDER_COLOR};

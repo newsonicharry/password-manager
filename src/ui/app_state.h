@@ -4,11 +4,25 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include "../vault.h"
 #include "screens/ui_constants.h"
+#include "../vault.h"
+#include "message_type.h"
+
 
 namespace ui::state
 {
+  enum class SelectedScreen
+  {
+    Quit,
+    Start,
+    Login,
+    Setup,
+    Message,
+    MainVault
+  };
+
+
+
   struct LoginState
   {
     std::string username;
@@ -22,8 +36,18 @@ namespace ui::state
 
     std::string password;
     std::string confirmed_password;
+
+    int strength_bar_index{0};
   };
 
+  struct MessageState
+  {
+    std::string message;
+    MessageType message_type;
+    std::string title;
+    SelectedScreen next_screen;    
+  };
+  
 
   struct MainVaultState
   {
@@ -50,17 +74,7 @@ namespace ui::state
     bool include_symbols  {true};
   };
 
-  enum class SelectedScreen
-  {
-    Quit,
-    Start,
-    Login,
-    Setup,
-    Message,
-    MainVault
-  };
-
-
+  
   struct AppState
   {
     SelectedScreen selected_screen{SelectedScreen::Start};
@@ -70,7 +84,7 @@ namespace ui::state
     EditState editor{};
     LoginState login{};
     SetupState setup{};
-
+    MessageState message{};
 
     void initalize();
     void destroy();

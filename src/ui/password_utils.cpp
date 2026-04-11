@@ -148,7 +148,7 @@ auto ui::password_utils::generate_random_password(std::size_t length, std::bitse
 
 
 //WARNING: does not account for more nuanced detections with weak human design flaws (such as repeated strings or common passwords)
-auto ui::password_utils::classify_password_strength(std::string_view password) -> PasswordStrength
+auto ui::password_utils::classify_password_strength(const std::string& password) -> PasswordStrength
 {
   bool found_lowercase{false};
   bool found_uppercase{false};

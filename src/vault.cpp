@@ -87,6 +87,7 @@ auto Vault::convert_from_bitwarden(std::string_view username, const fs::path& js
     return std::unexpected(exception);
   }
 
+  
   return vault;
 }
 

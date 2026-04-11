@@ -2,6 +2,7 @@
 #include "../theme.h"
 #include "../components/container.h"
 #include "../components/components.h"
+#include "../components/input_field_component.h"
 #include "../app_state.h"
 #include "ui_constants.h"
 #include <cctype>

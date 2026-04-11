@@ -1,16 +1,13 @@
-#include <bitset>
 #include <ftxui/component/component_base.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/component/component.hpp>
-
-#include <memory>
-#include <string>
 #include <iostream>
+#include <string_view>
 #include <utility>
 #include "app.h"
 #include "app_state.h"
-#include "screens/screens.h"
 #include "password_utils.h"
+#include "screens/screens.h"
 
 using namespace ftxui;
 
@@ -40,32 +37,47 @@ void ui::vault_renderer()
 {
   state::AppState app_state{};
   app_state.initalize();
-  // Vault my_vault{open_existing_vault(USERNAME, PASSWORD_STRING)}; 
-  // app_state.main_vault.populate(my_vault);
+
+  // const std::string my_password = "harry is super cool";
+  // password_utils::PasswordStrength strength = password_utils::classify_password_strength(my_password);
+  // std::cout << static_cast<int>(strength) << std::endl;
+  // while(true);
 
   ScreenInteractive screen = ScreenInteractive::Fullscreen();
   // screen.Loop(screens::render_setup_screen(app_state));
   Component start_screen{ screens::render_start_screen(app_state) };
   Component login_screen{ screens::render_login_screen(app_state) };
   Component setup_screen{ screens::render_setup_screen(app_state) };
+  Component message_screen{ screens::render_message_screen(app_state)};
+
 
   auto all_screens{ Container::Vertical({
     start_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Start; }),
     login_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Login; }),
-    setup_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Setup; })
+    setup_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Setup; }),
+    message_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Message; })
+
   })};
 
   
-  auto root{ Renderer(all_screens, [=, &screen, &app_state]{
+  auto root{ Renderer(all_screens, [&]{
+
       switch (app_state.selected_screen){
+
       case state::SelectedScreen::Quit:
         screen.ExitLoopClosure()();
+
       case state::SelectedScreen::Login:
         return login_screen -> Render();
+
       case state::SelectedScreen::Setup:
         return setup_screen -> Render();
+
+      case state::SelectedScreen::Message:        
+        return message_screen -> Render();
+
       default:
-        return start_screen -> Render(); 
+        return start_screen -> Render();
       }
     }
   )};
