@@ -19,9 +19,10 @@ namespace ui::state
     Login,
     Setup,
     Message,
+    Search,
+    Delete,
     MainVault
   };
-
 
 
   struct LoginState
@@ -48,7 +49,20 @@ namespace ui::state
     std::string title;
     SelectedScreen next_screen;    
   };
-  
+
+
+  // main vault helpers
+  struct SearchState
+  {
+    std::string search_field; 
+  }; 
+
+  struct DeleteState
+  {
+    std::string delete_field; 
+  }; 
+
+  // main vault
 
   struct MainVaultState
   {
@@ -80,14 +94,15 @@ namespace ui::state
   struct AppState
   {
     SelectedScreen selected_screen{SelectedScreen::Start};
-
     
     MainVaultState main_vault{};
     EditState editor{};
     LoginState login{};
     SetupState setup{};
     MessageState message{};
-
+    SearchState search{};
+    DeleteState deleter{};
+    
     void initalize();
     void destroy();
   };

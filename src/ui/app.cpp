@@ -38,19 +38,17 @@ void ui::vault_renderer()
 {
   state::AppState app_state{};
   app_state.initalize();
-  // app_state.selected_screen = state::SelectedScreen::MainVault;
 
-  // const std::string my_password = "harry is super cool";
-  // password_utils::PasswordStrength strength = password_utils::classify_password_strength(my_password);
-  // std::cout << static_cast<int>(strength) << std::endl;
-  // while(true);
-
+  // app_state.selected_screen = state::SelectedScreen::Delete;
+     
   ScreenInteractive screen = ScreenInteractive::Fullscreen();
-  // screen.Loop(screens::render_setup_screen(app_state));
+
   Component start_screen{ screens::render_start_screen(app_state) };
   Component login_screen{ screens::render_login_screen(app_state) };
   Component setup_screen{ screens::render_setup_screen(app_state) };
   Component message_screen{ screens::render_message_screen(app_state)};
+  Component search_screen{ screens::render_search_screen(app_state)};
+  Component delete_screen{ screens::render_delete_screen(app_state)};
   Component vault_screen{ screens::render_vault_screen(app_state)};
 
 
@@ -59,8 +57,9 @@ void ui::vault_renderer()
     login_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Login; }),
     setup_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Setup; }),
     message_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Message; }),
+    search_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Search; }),
+    delete_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Delete; }),
     vault_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::MainVault; })
-
   })};
 
   
@@ -82,6 +81,12 @@ void ui::vault_renderer()
 
       case state::SelectedScreen::Message:        
         return message_screen -> Render();
+
+      case state::SelectedScreen::Search:        
+        return search_screen -> Render();
+
+      case state::SelectedScreen::Delete:        
+        return delete_screen -> Render();
 
       default:
         return start_screen -> Render();

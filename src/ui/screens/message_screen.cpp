@@ -9,6 +9,7 @@
 #include <ftxui/component/component.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/terminal.hpp>
+#include <functional>
 #include <string_view>
 
 using namespace ftxui;
@@ -89,54 +90,14 @@ auto render_internals(state::AppState& app_state) -> Component
     });                  
   });
 }
-
-auto render_body(state::AppState& app_state) -> Component
-{
-  // Repersents the 6 lines needed to display both the header and footer
-  constexpr int NUM_RESERVED_Y_LINES = 6;
-
-  // Repersents the 2 lines needed to display the border on both sides
-  constexpr int NUM_RESERVED_X_LINES = 2;
-
-
-  // Half of the remaining y area that can be free space (because there are are both a bottom and top empty area)
-  // so anything that is left thats not used to fill the TEXT_Y_AREA
-  auto calculate_y_section_area = [=](){
-    return std::max((Terminal::Size().dimy - NUM_RESERVED_Y_LINES - TEXT_Y_AREA)/2, 0);
-  };
-  auto calculate_x_section_area = [=](){
-      return std::max((Terminal::Size().dimx - NUM_RESERVED_X_LINES - TEXT_X_AREA)/2, 0);
-  };
-
-  Component body_internal{ render_internals(app_state) };
-  auto layout { Container::Vertical({ body_internal }) };
-  
-  return Renderer(layout, [=, &app_state]{
-    return vbox({
-        separatorEmpty() | yflex_grow | size(ftxui::HEIGHT, ftxui::EQUAL, calculate_y_section_area()),
-  
-        hbox({
-          separatorEmpty() | xflex_grow | size(ftxui::WIDTH, ftxui::EQUAL, calculate_x_section_area()),
-
-          body_internal->Render() | borderLight | xflex_grow,
-
-          separatorEmpty() | xflex_grow | size(ftxui::WIDTH, ftxui::EQUAL, calculate_x_section_area()),
-        }) | yflex_grow,
-
-        separatorEmpty() | yflex_grow | size(ftxui::HEIGHT, ftxui::EQUAL, calculate_y_section_area()),
-    }) | yflex_grow;                
-  });
-}
-
   
 }// unnamed namespace
 
 
-auto ui::screens::render_message_screen(ui::state::AppState& app_state) -> ftxui::Component
+auto ui::screens::render_message_screen(state::AppState& app_state) -> ftxui::Component
 { 
-  
+  Component body{ui::components::render_contained_body(TEXT_X_AREA, TEXT_Y_AREA, [&]{ return render_internals(app_state);}) };
   Component header{ ui::components::render_header("MESSAGE")};
-  Component body{ render_body(app_state) };
   Component layout { Container::Vertical({
     header,
     body,

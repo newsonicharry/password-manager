@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ftxui/component/app.hpp>
 #include <ftxui/component/component.hpp>
 #include <numeric>
 #include <string_view>
@@ -18,7 +19,8 @@ namespace ui::components
 
   auto render_footer(std::string_view status_type, Color status_color) -> Component;
 
-
+  auto render_contained_body(int text_x_area, int text_y_area, const std::function<Component()>& internals) -> Component;
+  
   template <std::size_t N>
   auto create_title_text(const std::array<std::string_view, N>& title_text) -> ftxui::Element
   {

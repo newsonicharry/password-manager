@@ -76,6 +76,8 @@ add_executable(password_manager
     src/ui/screens/message_screen.cpp
     src/ui/screens/vault_screen.cpp
     src/ui/screens/entry_screen.cpp
+    src/ui/screens/search_screen.cpp
+    src/ui/screens/delete_screen.cpp
    
     src/ui/components/components.h
     src/ui/components/components.cpp
