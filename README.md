@@ -1,3 +1,8 @@
+
+
+
+
+
 # Password Manager
 
 A terminal-based password manager with a TUI (Terminal User Interface), built in C++23. All data is stored locally and encrypted with industry-standard cryptography. Each user has their own encrypted vault file, and existing passwords can be imported from Bitwarden.
@@ -20,7 +25,7 @@ A terminal-based password manager with a TUI (Terminal User Interface), built in
 
 ## Usage
 
-todo on finished version
+https://github.com/user-attachments/assets/006ad0ba-3498-4891-ae55-331a41e1e4b8
 
 ---
 
