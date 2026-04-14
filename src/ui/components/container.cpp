@@ -3,6 +3,8 @@
 #include "../theme.h"
 #include <ftxui/component/app.hpp>
 #include <ftxui/component/component.hpp>
+#include <functional>
+#include <string_view>
 
 using namespace ftxui;
 namespace theme = ui::theme;
@@ -59,6 +61,16 @@ auto ui::components::render_contained_body(int text_x_area, int text_y_area, con
  
 auto ui::components::render_footer(std::string_view status_type, Color status_color) -> Component
 {
+  std::function<Element(std::string_view, std::string_view)> create_tab{ [](std::string_view input, std::string_view value){
+    return hbox({
+      separator(),           
+      separatorEmpty(),
+      text(input) | color(theme::FONT_COLOR) | bold,
+      text(value) | color(theme::FONT_COLOR),
+      separatorEmpty(),
+    }); 
+  }};
+  
   return Renderer([=]{
     return vbox({
       separator(),
@@ -70,28 +82,10 @@ auto ui::components::render_footer(std::string_view status_type, Color status_co
           separatorEmpty(),
           separator(),           
         }),
-        hbox({
-          separator(),           
-          separatorEmpty(),
-          text("[ENTER] ") | color(theme::FONT_COLOR) | bold,
-          text("SELECT") | color(theme::FONT_COLOR),
-          separatorEmpty(),
-        }) | align_right | flex,
-        hbox({
-          separator(),           
-          separatorEmpty(),
-          text("[TAB] ") | color(theme::FONT_COLOR) | bold,
-          text("NEXT FIELD") | color(theme::FONT_COLOR),
-          separatorEmpty(),
-          separator(),           
-        }) | align_right,
-        hbox({
-          separatorEmpty(),
-          text("[↑ + TAB] ") | color(theme::FONT_COLOR) | bold,
-          text("PREVIOUS FIELD") | color(theme::FONT_COLOR),
-          separatorEmpty(),
-        }) | align_right,
-
+        create_tab("[ENTER] ", "SELECT") | align_right | flex,
+        create_tab("[←  ↑ →  ↓] ", "NEXT FIELD"),
+        create_tab("[TAB] ", "NEXT FIELD"),
+        create_tab("[↑ + TAB] ", "PREVIOUS FIELD"),
 
       }) | xflex_grow,
 

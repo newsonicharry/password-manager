@@ -31,9 +31,8 @@ SecureBuffer::~SecureBuffer() noexcept
   {
     return;
   }
-
-  sodium_munlock(buffer_.data(), buffer_.capacity());
   sodium_memzero(buffer_.data(), buffer_.capacity());
+  sodium_munlock(buffer_.data(), buffer_.capacity());
 }
 
 
@@ -44,9 +43,13 @@ auto SecureBuffer::operator=(SecureBuffer&& other) noexcept -> SecureBuffer&
     return *this;  
   }
 
-  sodium_memzero(buffer_.data(), buffer_.capacity());
-  buffer_ = std::move(other.buffer_);
+  if (!buffer_.empty() ){
+    sodium_memzero(buffer_.data(), buffer_.capacity());
+    sodium_munlock(buffer_.data(), buffer_.capacity());
+
     
+  }
+    buffer_ = std::move(other.buffer_);
   return *this;
 }
 

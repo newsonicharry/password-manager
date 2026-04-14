@@ -4,7 +4,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-
 project(password_manager LANGUAGES CXX)
 
 include(FetchContent)
@@ -27,7 +26,7 @@ FetchContent_MakeAvailable(json)
 
 
 add_subdirectory(dependencies/FTXUI)
-# add_subdirectory(dependencies/json)
+add_subdirectory(dependencies/clip)
 
 #make sure be got pkgconfig
 find_package(PkgConfig REQUIRED)
@@ -112,6 +111,7 @@ target_link_libraries(password_manager
         ${SODIUM_LIBRARIES}
         nlohmann_json::nlohmann_json
         GTest::gtest_main
+        clip
 )
 
 

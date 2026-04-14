@@ -6,6 +6,8 @@
 #include "password_entry.h"
 #include "secure_buffer.h"
 #include "vault_serializer.h"
+#include <cstddef>
+#include <cstdint>
 #include <string_view>
 #include <vector>
 #include <expected>
@@ -20,8 +22,10 @@ public:
 
   [[nodiscard]]
   auto list_entries() const ->  const std::vector<PasswordEntry>& { return entries_; }
+
   void modify_entry(std::size_t index, protocol::MagicIdentifier identifier, const SecureBuffer& new_data);
-  void add_entry(const PasswordEntry&);
+  void add_entry(PasswordEntry&& entry){ entries_.push_back(std::move(entry)); }
+  void delete_entry(std::size_t index){ entries_.erase(entries_.begin() + static_cast<int64_t>(index)); };
 
   void encrypt_to_file(const SecureBuffer& password);
 

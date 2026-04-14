@@ -2,6 +2,7 @@
 #include "../theme.h"
 #include "../components/container.h"
 #include "../app_state.h"
+#include "clip.h"
 #include <cctype>
 #include <ctime>
 #include <ftxui/component/app.hpp>
@@ -84,7 +85,7 @@ auto render_entry(state::AppState& app_state) -> Component
 
       section_builder(
         "[ Security ]",
-        std::pair{"Password    :    "sv, password_entry->get_password()}
+        std::pair{"Password    :    "sv, app_state.main_vault.is_revealed ? password_entry->get_password() : std::string(password_entry->get_password().length(), '*')}
       ),
 
       separatorEmpty() | size(ftxui::HEIGHT, ftxui::EQUAL, 2),
@@ -108,6 +109,7 @@ auto render_sites(state::AppState& app_state) -> Component
   option.on_change = [&]{
     Vault* vault = app_state.main_vault.vault.get();
     app_state.main_vault.current_entry = &vault->list_entries()[app_state.main_vault.entry_selected]; 
+    app_state.main_vault.is_revealed = false; 
   };
 
   auto menu{Menu(&app_state.main_vault.sites, &app_state.main_vault.entry_selected, option) | color(theme::FONT_COLOR)};
@@ -208,6 +210,21 @@ auto render_body(state::AppState& app_state) -> Component
 }
 
 
+void on_edit_key(state::AppState& app_state)
+{
+  const PasswordEntry* entry{ app_state.main_vault.current_entry };
+
+  app_state.entry.site = entry->get_site();
+  app_state.entry.username = entry->get_username();
+  app_state.entry.notes = entry->get_note();
+  app_state.entry.password = entry->get_password();
+
+  app_state.entry.is_new = false;
+
+  app_state.selected_screen = state::SelectedScreen::Entry;
+}
+
+
 } // unnammed namespace
 
 
@@ -227,13 +244,23 @@ auto ui::screens::render_vault_screen(state::AppState& app_state) -> Component
     {
       app_state.selected_screen = state::SelectedScreen::Delete;        
     }
-    // else if(event == Event::Character('n'))
-    // {
-      // app_state.selected_screen = state::SelectedScreen::;        
-    // }
-
+    else if(event == Event::Character('e'))
+    {
+      on_edit_key(app_state);
+    }
+    else if(event == Event::Character('n'))
+    {
+      app_state.selected_screen = state::SelectedScreen::Entry;        
+    }
+    else if (event == Event::Character('c'))
+    {
+      clip::set_text(std::string(app_state.main_vault.current_entry->get_password()));      
+    }
+    else if (event == Event::Character('r'))
+    {
+      app_state.main_vault.is_revealed = !app_state.main_vault.is_revealed;
+    }
     
-
     return false;  
   }};
 

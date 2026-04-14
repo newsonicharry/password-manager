@@ -67,6 +67,7 @@ auto try_setup(state::AppState& app_state)
     return;
   }
   
+  app_state.password = app_state.setup.password;
   app_state.main_vault.vault = std::make_shared<Vault>(std::move(vault.value()));
   app_state.main_vault.populate(app_state.main_vault.vault.get());
 

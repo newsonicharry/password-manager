@@ -39,7 +39,9 @@ void ui::vault_renderer()
   state::AppState app_state{};
   app_state.initalize();
 
-  // app_state.selected_screen = state::SelectedScreen::Delete;
+  // app_state.selected_screen = state::SelectedScreen::Login;
+  // app_state.login.username = "harry";
+  // app_state.login.password = "password";
      
   ScreenInteractive screen = ScreenInteractive::Fullscreen();
 
@@ -49,17 +51,19 @@ void ui::vault_renderer()
   Component message_screen{ screens::render_message_screen(app_state)};
   Component search_screen{ screens::render_search_screen(app_state)};
   Component delete_screen{ screens::render_delete_screen(app_state)};
+  Component entry_screen{ screens::render_entry_screen(app_state)};
   Component vault_screen{ screens::render_vault_screen(app_state)};
 
 
   auto all_screens{ Container::Vertical({
-    start_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Start; }),
-    login_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Login; }),
-    setup_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Setup; }),
-    message_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Message; }),
-    search_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Search; }),
-    delete_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Delete; }),
-    vault_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::MainVault; })
+    start_screen   | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Start;     }),
+    login_screen   | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Login;     }),
+    setup_screen   | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Setup;     }),
+    message_screen | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Message;   }),
+    search_screen  | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Search;    }),
+    delete_screen  | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Delete;    }),
+    entry_screen   | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::Entry;     }),
+    vault_screen   | Maybe([&] { return app_state.selected_screen == state::SelectedScreen::MainVault; })
   })};
 
   
@@ -67,29 +71,16 @@ void ui::vault_renderer()
 
       switch (app_state.selected_screen){
 
-      case state::SelectedScreen::Quit:
-        screen.ExitLoopClosure()();
+      case state::SelectedScreen::Login: return login_screen -> Render();
+      case state::SelectedScreen::Setup: return setup_screen -> Render();
+      case state::SelectedScreen::MainVault: return vault_screen -> Render();
+      case state::SelectedScreen::Message: return message_screen -> Render();
+      case state::SelectedScreen::Search: return search_screen -> Render();
+      case state::SelectedScreen::Delete: return delete_screen -> Render();
+      case state::SelectedScreen::Entry: return entry_screen -> Render();
 
-      case state::SelectedScreen::Login:
-        return login_screen -> Render();
-
-      case state::SelectedScreen::Setup:
-        return setup_screen -> Render();
-
-      case state::SelectedScreen::MainVault:        
-        return vault_screen -> Render();
-
-      case state::SelectedScreen::Message:        
-        return message_screen -> Render();
-
-      case state::SelectedScreen::Search:        
-        return search_screen -> Render();
-
-      case state::SelectedScreen::Delete:        
-        return delete_screen -> Render();
-
-      default:
-        return start_screen -> Render();
+      case state::SelectedScreen::Quit: screen.ExitLoopClosure()();
+      default: return start_screen -> Render();
       }
     }
   )};

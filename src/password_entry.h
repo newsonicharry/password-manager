@@ -3,6 +3,7 @@
 #include <cassert>
 #include <chrono>
 #include <cstddef>
+#include <cstdint>
 #include <cstdlib>
 #include <ctime>
 #include <span>
@@ -34,7 +35,13 @@ class PasswordEntry{
 public:
   
   PasswordEntry(const SecureBuffer& vault, const Slices& vault_offsets);
-
+  PasswordEntry(std::string_view site,
+                std::string_view username,
+                std::string_view password,
+                std::string_view note,
+                std::int64_t date_created,
+                std::int64_t date_modified);
+  
   [[nodiscard]] auto get_site() const -> std::string_view;
   [[nodiscard]] auto get_username() const -> std::string_view;
   [[nodiscard]] auto get_password() const -> std::string_view;

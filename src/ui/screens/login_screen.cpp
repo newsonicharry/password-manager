@@ -49,7 +49,7 @@ auto try_login(state::AppState& app_state)
     return;
   }
 
-
+  app_state.password = app_state.login.password;
   app_state.main_vault.vault = std::make_shared<Vault>(std::move(vault.value()));
   app_state.main_vault.populate(app_state.main_vault.vault.get());
 

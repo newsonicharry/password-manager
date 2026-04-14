@@ -30,6 +30,10 @@ auto render_internals(state::AppState& app_state) -> Component
   std::function<void()> on_update{ [&]{
     if (app_state.deleter.delete_field == "delete")
     {
+      app_state.main_vault.vault->delete_entry(app_state.main_vault.entry_selected);
+      app_state.main_vault.populate(app_state.main_vault.vault.get());
+      app_state.main_vault.vault->encrypt_to_file({app_state.password});
+
       app_state.deleter.delete_field = "";
       app_state.selected_screen = ui::state::SelectedScreen::MainVault;
     } 

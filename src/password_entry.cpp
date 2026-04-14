@@ -2,13 +2,18 @@
 #include "constants.h"
 #include "exception.h"
 #include "secure_buffer.h"
+#include "utils.h"
 #include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <cstddef>
+#include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <numeric>
 #include <string_view>
+#include <iostream>
+#include <utility>
 
 // offset members
 
@@ -116,6 +121,7 @@ auto PasswordEntry::get_date_modified() const -> std::chrono::sys_seconds
 // todo: PLEASE HEAVILY TEST THIS FUNCTION, POINTER ARITHMETIC IS SCARY
 void PasswordEntry::modify(MagicIdentifier identifier, const SecureBuffer& new_identifier_data)
 {
+
   const auto slice{entry_offset_.get(identifier)};
 
   const std::size_t new_entry_size{entry_.size() - slice.size() + new_identifier_data.size()}; 
@@ -129,33 +135,35 @@ void PasswordEntry::modify(MagicIdentifier identifier, const SecureBuffer& new_i
   // the number of bytes between the start of the entry and the potion of the entry holding the old identifier data
   std::ptrdiff_t num_start_elements{slice.data() - entry_.get_read_ptr()};
 
-  std::copy(entry_.get_read_ptr(), entry_.get_read_ptr()+num_start_elements, write_ptr); 
+  // write in anything before our new dataslice
+  std::copy(entry_.begin(), entry_.begin()+num_start_elements, write_ptr); 
   write_ptr += num_start_elements;
 
-   
+  // write in our new data slice
   std::copy(new_identifier_data.begin(), new_identifier_data.end(), write_ptr);
-
   write_ptr += new_identifier_data.size();
-  
-  const std::size_t written_elements{num_start_elements + new_identifier_data.size()};
-  std::copy(entry_.get_read_ptr()+written_elements, entry_.get_read_ptr()+entry_.size(), write_ptr);
 
+  // write the rest of our old data
+  const std::size_t written_elements{num_start_elements + slice.size()};
+  std::copy(entry_.begin()+written_elements, entry_.end(), write_ptr);
+  
+  
   // this is only to update the size of the new data
   // at this point every old slice is considered invalid and pointing to old memory
   // though techincally we have not yet moved the new memory in yet
   entry_offset_.set(identifier, std::span{std::bit_cast<std::byte*>(nullptr), new_identifier_data.size()});
 
   // updates the new pointers to the memory allocated in the new_entry
-  const std::byte* pointer{new_entry.get_read_ptr()};
+  const std::byte* pointer{new_entry.begin()};
   for (std::size_t raw_identifier{protocol::start_identifier}; raw_identifier < protocol::end_identifier; raw_identifier++)
   {
     const MagicIdentifier identifier{static_cast<MagicIdentifier>(raw_identifier)};
     std::size_t identifier_size {entry_offset_.get(identifier).size()};
-
+    
     entry_offset_.set(identifier, std::span{pointer, identifier_size});
     pointer += identifier_size;
-    
   }
+
   
   entry_ = std::move(new_entry);
 }
@@ -191,6 +199,45 @@ PasswordEntry::PasswordEntry(const SecureBuffer& vault, const Slices& vault_offs
   entry_ = std::move(combined_entry_data);
   entry_offset_ = local_slice;  
 }
+
+
+PasswordEntry::PasswordEntry(std::string_view site,
+                             std::string_view username,
+                             std::string_view password,
+                             std::string_view note,
+                             std::int64_t date_created,
+                             std::int64_t date_modified)
+{
+
+
+  std::array<std::size_t, static_cast<std::size_t>(MagicIdentifier::Size)> bytes_by_identifier{
+    site.size(),
+    username.size(),
+    password.size(),
+    note.size(),
+    sizeof(date_created),
+    sizeof(date_modified)
+  };
+
+  const std::size_t total_bytes{ std::accumulate(bytes_by_identifier.begin(), bytes_by_identifier.end(), static_cast<std::size_t>(0))};
+
+  SecureBuffer entry{ total_bytes };
+  Slices offsets{};
+
+  const std::byte* curr_location{ entry.begin() };
+
+  // loops through all identifiers
+  for (std::size_t identifier{protocol::start_identifier}; identifier < protocol::end_identifier; identifier++)
+  {
+    const std::size_t num_identifier_bytes{ bytes_by_identifier.at(identifier) };
+    offsets.set(static_cast<MagicIdentifier>(identifier), std::span{curr_location, num_identifier_bytes});
+    curr_location += num_identifier_bytes;
+  }
+
+  entry_ = std::move(entry);
+  entry_offset_ = offsets;
+}
+
 
 
 

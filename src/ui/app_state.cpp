@@ -1,7 +1,11 @@
 #include "app_state.h"
+#include "screens/ui_constants.h"
+#include <string_view>
+#include <vector>
 
 void ui::state::MainVaultState::populate(Vault* vault)
 {
+  sites = std::vector<std::string_view>{};
   for (const auto& entry : vault->list_entries())
   {
     sites.push_back(entry.get_site());
@@ -10,6 +14,8 @@ void ui::state::MainVaultState::populate(Vault* vault)
   current_entry = vault->list_entries().data();
   entry_selected = 0;
 }
+
+
 
 
 void ui::state::AppState::initalize()
@@ -22,6 +28,7 @@ void ui::state::AppState::initalize()
   setup_secure_string(login.password);
   setup_secure_string(setup.password);
   setup_secure_string(setup.confirmed_password);
+  setup_secure_string(password);
   
 }
 
@@ -35,4 +42,5 @@ void ui::state::AppState::destroy()
   destroy_secure_string(login.password);
   destroy_secure_string(setup.password);
   destroy_secure_string(setup.confirmed_password);
+  destroy_secure_string(password);
 }
