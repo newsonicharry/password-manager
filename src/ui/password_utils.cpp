@@ -142,7 +142,6 @@ auto ui::password_utils::generate_random_password(std::size_t length, std::bitse
     insert_into_ptr(write_ptr, selected_char);
   }
   
-  print_container(final_password, true);
   return final_password;
 }
 

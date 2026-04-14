@@ -6,6 +6,8 @@
 #include "../app_state.h"
 #include "ui_constants.h"
 #include "../../utils.h"
+#include "../password_utils.h"
+#include <bitset>
 #include <cctype>
 #include <cstddef>
 #include <cstdint>
@@ -17,6 +19,7 @@
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/color.hpp>
 #include <ftxui/screen/terminal.hpp>
+#include <string>
 #include <string_view>
 
 
@@ -33,6 +36,40 @@ constexpr int BUTTON_WIDTH{ constants::STANDARD_WIDTH / 2  };
 constexpr int NOTES_HEIGHT{ 6 };
 constexpr int PASSWORD_LENGTH_WIDTH{ 5 };
 
+void on_password_generator(state::AppState& app_state)
+{
+
+  if (std::stoi(app_state.entry.password_length) > constants::MAX_INPUT_CHARACTERS)
+  {
+    app_state.selected_screen = ui::state::SelectedScreen::Message;
+
+    app_state.message.message = "Password length exceeded maximum allowed characters.\n";
+    app_state.message.message_type = MessageType::Info;
+    app_state.message.title = "UI WARNING";
+    app_state.message.next_screen = ui::state::SelectedScreen::Entry;
+
+    return;
+  }
+  
+
+  std::bitset<4> generation_options{
+    static_cast<uint64_t>(app_state.entry.include_uppercase) << 0 |
+    static_cast<uint64_t>(app_state.entry.include_lowercase) << 1 |
+    static_cast<uint64_t>(app_state.entry.include_numbers)   << 2 |
+    static_cast<uint64_t>(app_state.entry.include_symbols)   << 3
+  };
+
+  if (generation_options.none())
+  {
+    return;  
+  }
+
+  SecureBuffer new_password{ ui::password_utils::generate_random_password(std::stoi(app_state.entry.password_length), generation_options) };
+  app_state.entry.password = std::string(std::bit_cast<const char*>(new_password.begin()), new_password.size());
+}
+
+
+
 // helper
 auto render_password_generation(state::AppState& app_state) -> Component
 {
@@ -48,7 +85,7 @@ auto render_password_generation(state::AppState& app_state) -> Component
   Component include_numbers{Checkbox("Numbers", &app_state.entry.include_numbers) };
   Component include_symbols{Checkbox("Symbols", &app_state.entry.include_symbols) };
 
-  Component generate_password_button{create_button("GENERATE PASSWORD", [](){})};
+  Component generate_password_button{create_button("GENERATE PASSWORD", [&]{ on_password_generator(app_state); })};
 
   auto components = Container::Vertical({
     generate_password_button,
