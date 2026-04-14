@@ -55,6 +55,8 @@ namespace ui::state
   struct SearchState
   {
     std::string search_field; 
+    std::vector<std::string_view> sites;
+    int curr_site_index;
   }; 
 
   struct DeleteState

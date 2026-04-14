@@ -211,6 +211,7 @@ PasswordEntry::PasswordEntry(std::string_view site,
 
 
   std::array<std::size_t, static_cast<std::size_t>(MagicIdentifier::Size)> bytes_by_identifier{
+    0,
     site.size(),
     username.size(),
     password.size(),
@@ -223,6 +224,15 @@ PasswordEntry::PasswordEntry(std::string_view site,
 
   SecureBuffer entry{ total_bytes };
   Slices offsets{};
+
+  std::byte* write_ptr{ entry.get_write_ptr() };
+
+  insert_into_ptr(write_ptr, site);
+  insert_into_ptr(write_ptr, username);
+  insert_into_ptr(write_ptr, password);
+  insert_into_ptr(write_ptr, note);
+  insert_into_ptr(write_ptr, date_created);
+  insert_into_ptr(write_ptr, date_modified);
 
   const std::byte* curr_location{ entry.begin() };
 

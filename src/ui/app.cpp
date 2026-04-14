@@ -2,46 +2,17 @@
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/component/component.hpp>
 #include <ftxui/screen/screen.hpp>
-#include <iostream>
-#include <string_view>
-#include <utility>
 #include "app.h"
 #include "app_state.h"
-#include "password_utils.h"
 #include "screens/screens.h"
 
 using namespace ftxui;
-
-
-constexpr std::string_view USERNAME{"harry"};
-constexpr std::string_view PASSWORD_STRING{"pigeonsarecool123"};
-
-auto open_existing_vault(std::string_view username, std::string_view password_string) -> Vault
-{
-
-  SecureBuffer password_buffer{password_string.length()};
-  std::copy(std::bit_cast<std::byte*>(password_string.begin()), std::bit_cast<std::byte*>(password_string.end()), password_buffer.get_write_ptr());
-
-  auto vault {Vault::open_existing(username, password_buffer)};
-
-  if (!vault)
-  {
-    std::cout << vault.error().what();
-  }
-
-  return std::move(*vault);
-}
-
 
 
 void ui::vault_renderer()
 {
   state::AppState app_state{};
   app_state.initalize();
-
-  // app_state.selected_screen = state::SelectedScreen::Login;
-  // app_state.login.username = "harry";
-  // app_state.login.password = "password";
      
   ScreenInteractive screen = ScreenInteractive::Fullscreen();
 

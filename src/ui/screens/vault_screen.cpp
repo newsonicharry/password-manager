@@ -224,6 +224,25 @@ void on_edit_key(state::AppState& app_state)
   app_state.selected_screen = state::SelectedScreen::Entry;
 }
 
+void on_new_key(state::AppState& app_state)
+{
+  const PasswordEntry* entry{ app_state.main_vault.current_entry };
+
+  app_state.entry.site = "";
+  app_state.entry.username = "";
+  app_state.entry.notes = "";
+  app_state.entry.password = "";
+
+  app_state.entry.is_new = true;
+
+  app_state.selected_screen = state::SelectedScreen::Entry;
+}
+
+void on_search_key(state::AppState& app_state)
+{
+  app_state.search.sites = app_state.main_vault.sites;
+  app_state.selected_screen = state::SelectedScreen::Search;
+}
 
 } // unnammed namespace
 
@@ -232,34 +251,14 @@ auto ui::screens::render_vault_screen(state::AppState& app_state) -> Component
 {
   // add saving vault option
   auto on_key_press{[&](const Event& event){
-    if (event == Event::Character('q'))
-    {
-      app_state.selected_screen = state::SelectedScreen::Quit;  
-    }
-    else if(event == Event::Character('/'))
-    {
-      app_state.selected_screen = state::SelectedScreen::Search;        
-    }
-    else if(event == Event::Character('d'))
-    {
-      app_state.selected_screen = state::SelectedScreen::Delete;        
-    }
-    else if(event == Event::Character('e'))
-    {
-      on_edit_key(app_state);
-    }
-    else if(event == Event::Character('n'))
-    {
-      app_state.selected_screen = state::SelectedScreen::Entry;        
-    }
-    else if (event == Event::Character('c'))
-    {
-      clip::set_text(std::string(app_state.main_vault.current_entry->get_password()));      
-    }
-    else if (event == Event::Character('r'))
-    {
-      app_state.main_vault.is_revealed = !app_state.main_vault.is_revealed;
-    }
+
+    if     (event == Event::Character('q')) { app_state.selected_screen = state::SelectedScreen::Quit; }
+    else if(event == Event::Character('d')) { app_state.selected_screen = state::SelectedScreen::Delete; }
+    else if(event == Event::Character('n')) { on_new_key(app_state); }
+    else if(event == Event::Character('e')) { on_edit_key(app_state); }
+    else if(event == Event::Character('/')) { on_search_key(app_state); }
+    else if(event == Event::Character('c')) { clip::set_text(std::string(app_state.main_vault.current_entry->get_password())); }
+    else if(event == Event::Character('r')) { app_state.main_vault.is_revealed = !app_state.main_vault.is_revealed; }
     
     return false;  
   }};

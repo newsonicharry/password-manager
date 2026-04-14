@@ -1,11 +1,11 @@
 #include "screens.h"
 #include "../theme.h"
 #include "../components/container.h"
-#include "../components/components.h"
 #include "../components/input_field_component.h"
 #include "../app_state.h"
 #include "ui_constants.h"
 #include <cctype>
+#include <cstddef>
 #include <ftxui/component/app.hpp>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/component_base.hpp>
@@ -14,8 +14,10 @@
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/color.hpp>
 #include <ftxui/screen/terminal.hpp>
+#include <functional>
 #include <string_view>
-
+#include <algorithm>
+#include <vector>
 
 using namespace ftxui;
 
@@ -54,21 +56,45 @@ auto levenshtein(std::string_view s1, std::string_view s2) -> int{
     return distances[s2_length];
 }
 
+void select_main_menu_from_search_menu(state::AppState& app_state)
+{
+  std::string_view target{ app_state.search.sites[static_cast<std::size_t>(app_state.search.curr_site_index)] };
+
+  for (std::size_t i{}; i < app_state.main_vault.sites.size(); i++)
+  {
+    std::string_view curr_site{ app_state.main_vault.sites[i] };
+    if (curr_site == target){
+      app_state.main_vault.entry_selected = static_cast<int>(i);
+      return;
+    }
+  }
+}
+
 
 auto render_body(state::AppState& app_state) -> Component
 {
   using namespace ui::components;
 
+  std::function<void()> on_input_change{[&]{
+    std::sort(app_state.search.sites.begin(), app_state.search.sites.end(), [&](std::string_view first, std::string_view second) {
+      auto score_a = 1.0 - (static_cast<double>(levenshtein(first, app_state.search.search_field)) / std::max(first.size(), app_state.search.search_field.size()));
+      auto score_b = 1.0 - (static_cast<double>(levenshtein(second, app_state.search.search_field)) / std::max(second.size(), app_state.search.search_field.size()));
+
+      return score_a > score_b;
+    });
+  }};
+
   Filter search_filter{filter_combiner(newline_input_filter, char_limit_input_filter(&app_state.search.search_field, constants::MAX_INPUT_CHARACTERS))};
-  Component search_field{create_input_field(&app_state.search.search_field, "Search...", search_filter)};
+  Component search_field{create_input_field(&app_state.search.search_field, "Search...", search_filter, !IS_PASSWORD_INPUT, on_input_change)};
 
   MenuOption option;
 
   option.on_enter = [&]{
+    select_main_menu_from_search_menu(app_state);
     app_state.selected_screen = ui::state::SelectedScreen::MainVault;
   };
 
-  auto menu{Menu(&app_state.main_vault.sites, &app_state.main_vault.entry_selected, option) | color(theme::FONT_COLOR)};
+ auto menu{Menu(&app_state.search.sites, &app_state.search.curr_site_index, option) | color(theme::FONT_COLOR)};
   
   auto layout{ Container::Vertical({
     search_field,

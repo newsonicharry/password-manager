@@ -3,6 +3,7 @@
 #include "password_entry.h"
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cctype>
 #include <cstddef>
 #include <iostream>
@@ -68,7 +69,7 @@ void insert_into_ptr(std::byte*& write_ptr, T&& data)
   }
   else
   {
-    std::copy(data.begin(), data.end(), write_ptr);
+    std::copy(std::bit_cast<std::byte*>(data.begin()), std::bit_cast<std::byte*>(data.end()), write_ptr);
     write_ptr += data.size();
   }
 

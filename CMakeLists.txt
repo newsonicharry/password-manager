@@ -8,25 +8,22 @@ project(password_manager LANGUAGES CXX)
 
 include(FetchContent)
 
-FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/releases/download/v1.17.0/googletest-1.17.0.tar.gz
-)
-FetchContent_MakeAvailable(googletest)
-
 
 FetchContent_Declare(
     json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
     GIT_TAG        v3.12.0
 )
-
-
 FetchContent_MakeAvailable(json)
 
+FetchContent_Declare(
+    clip
+    GIT_REPOSITORY https://github.com/dacap/clip.git
+    GIT_TAG        v1.15
+)
+FetchContent_MakeAvailable(clip)
 
 add_subdirectory(dependencies/FTXUI)
-add_subdirectory(dependencies/clip)
 
 #make sure be got pkgconfig
 find_package(PkgConfig REQUIRED)
@@ -104,28 +101,13 @@ target_include_directories(password_manager
 
 target_link_libraries(password_manager
     PRIVATE
-        -fsanitize=address
         ftxui::screen
         ftxui::dom
         ftxui::component
         ${SODIUM_LIBRARIES}
         nlohmann_json::nlohmann_json
-        GTest::gtest_main
         clip
+        -fsanitize=address
+
 )
 
-
-# enable_testing()
-
-
-# add_executable(unit_tests
-#     tests/test_example.cpp
-# )
-
-# target_link_libraries(unit_tests
-#     PRIVATE
-#         gtest
-#         gtest_main
-# )
-
-# add_test(NAME AllUnitTests COMMAND unit_tests)

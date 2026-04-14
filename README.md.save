@@ -10,7 +10,7 @@ A terminal-based password manager with a TUI (Terminal User Interface), built in
 - Wipes all memory storing secure data after use
 - File integrity is verified via a MAC with libsodium using associated data
 - Parses and converts Bitwarden JSON exports into a custom vault format
-- Full TUI that's fully navigable by keyboard
+- Fully navigable by keyboard
 - Generates strong random passwords with configurable options
 - Rates passwords from Very Weak to Very Strong
 - Each user account gets its own `.encrypted` file on disk
@@ -31,12 +31,8 @@ todo on finished version
 | [libsodium](https://libsodium.gitbook.io/doc/installation/) | Encryption, key hashing, and random number generation |
 | [FTXUI](https://github.com/ArthurSonzogni/FTXUI) | TUI rendering |
 | [nlohmann/json](https://github.com/nlohmann/json) | Parsing Bitwarden JSON exports |
-| [dacap/clip](https://github.com/dacap/clip) | Copy to clipboard |
 
-**nlohmann/json** and **dacap/clip** are fetched automatically by CMake, though **FTXUI** must be installed within`dependencies/FTXUI/` and **libsodium** must be installed on the system.
-
-**Libsodium installation:** 
-Follow the installation directions and install it from [here](https://libsodium.gitbook.io/doc/installation), directly from libsodium
+**nlohmann/json** is already fetched automatically by CMake, though **FTXUI** must be installed within`dependencies/FTXUI/` and **libsodium** must be installed on the system.
 
 ---
 
@@ -48,6 +44,9 @@ Follow the installation directions and install it from [here](https://libsodium.
 - C++23 compiler
 - libsodium
 - pkg-config
+
+**Libsodium installation:** 
+Follow the installation directions and install it from [here](https://libsodium.gitbook.io/doc/installation), directly from libsodium
 
 
 ### Clone and Build
@@ -90,7 +89,7 @@ The vault file uses a custom binary format with authenticated encryption:
 **File Header (67 bytes total):**
 | Field | Size | Description |
 |---|---|---|
-| Magic bytes | 8 bytes | `\0Encrypt` identifies the file format |
+| Magic bytes | 8 bytes | `\0Encrypt` — identifies the file format |
 | Nonce | 32 bytes | Randomly generated per encryption |
 | Salt | 16 bytes | Used for Argon2id key derivation |
 | Iterations | 1 byte | Argon2id iteration count |
